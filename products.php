@@ -39,20 +39,75 @@ if ($sort === 'price-low') {
 
 <!-- Breadcrumb Header -->
 <div class="bg-cream-100 py-4 border-bottom">
+
     <div class="container">
+
         <nav aria-label="breadcrumb">
+
             <ol class="breadcrumb mb-1 small">
-                <li class="breadcrumb-item"><a href="index.php" class="text-decoration-none text-muted">Home</a></li>
-                <li class="breadcrumb-item active text-maroon-800 fw-bold" aria-current="page">Shop Products</li>
+
+                <li class="breadcrumb-item">
+                    <a href="index.php"
+                       class="text-decoration-none text-muted">
+                        Home
+                    </a>
+                </li>
+
+                <li class="breadcrumb-item active text-maroon-800 fw-bold"
+                    aria-current="page">
+                    Shop Products
+                </li>
+
             </ol>
+
         </nav>
+
+
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+
             <div>
-                <h2 class="font-serif fw-bold text-maroon-900 mb-0">Homemade & Handcrafted Marketplace</h2>
-                <small class="text-muted">Showing <?php echo count($filtered_products); ?> authentic products created by verified women makers</small>
+
+                <?php if (!empty($search_query)): ?>
+
+                    <h2 class="font-serif fw-bold text-maroon-900 mb-0">
+                        Search Results for
+                        "<?php echo htmlspecialchars($search_query); ?>"
+                    </h2>
+
+                    <small class="text-muted">
+                        Found <?php echo count($filtered_products); ?> product(s)
+                    </small>
+
+                <?php elseif (!empty($selected_category)): ?>
+
+                    <h2 class="font-serif fw-bold text-maroon-900 mb-0">
+                        Homemade & Handcrafted Products
+                    </h2>
+
+                    <small class="text-muted">
+                        Showing <?php echo count($filtered_products); ?>
+                        products
+                    </small>
+
+                <?php else: ?>
+
+                    <h2 class="font-serif fw-bold text-maroon-900 mb-0">
+                        Homemade & Handcrafted Marketplace
+                    </h2>
+
+                    <small class="text-muted">
+                        Showing <?php echo count($filtered_products); ?>
+                        authentic products created by verified women makers
+                    </small>
+
+                <?php endif; ?>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
 
 <div class="container py-5">

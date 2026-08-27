@@ -1,10 +1,13 @@
 <?php
+
 $page_title = "Homemade with Love | Empowering Women Home Entrepreneurs";
+
 require_once __DIR__ . '/includes/header.php';
 
 $products = get_all_products($pdo);
-$categories = get_categories($pdo);
+$categories = $categories_nav;
 $sellers = get_sellers($pdo);
+
 ?>
 
 <!-- Hero Banner Section -->
@@ -299,3 +302,6 @@ $sellers = get_sellers($pdo);
 </section>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
+
+
+github

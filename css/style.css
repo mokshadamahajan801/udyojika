@@ -377,3 +377,34 @@ footer a:hover {
 .footer-divider {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+/* =========================================================
+   NO PRODUCTS FOUND
+========================================================= */
+
+.no-products-found {
+    background: #fffdf8;
+    border: 1px solid #eee5d5;
+    border-radius: 20px;
+    min-height: 380px;
+    padding: 50px 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-products-icon {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    background: #f8eee4;
+    color: #7b2d26;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 32px;
+}

@@ -135,5 +135,24 @@
 
     <!-- Custom Vanilla JS Script -->
     <script src="js/script.js"></script>
+
+    <script>
+function validateSearch() {
+
+    const searchInput = document.getElementById('searchInput');
+    const searchCategory = document.getElementById('searchCategory');
+
+    const searchText = searchInput.value.trim();
+    const category = searchCategory.value;
+
+    if (searchText === '' && category === '') {
+        searchInput.focus();
+        return false;
+    }
+
+    return true;
+}
+</script>
+
 </body>
 </html>
