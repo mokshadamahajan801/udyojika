@@ -302,6 +302,3 @@ $sellers = get_sellers($pdo);
 </section>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
-
-
-github
