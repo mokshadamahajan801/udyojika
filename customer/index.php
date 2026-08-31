@@ -1,13 +1,27 @@
 <?php
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+require_once __DIR__ . '/auth.php';
+
 $page_title = "My Account - Udyojika";
-$page_header = "Welcome back, " . htmlspecialchars($current_user['name']);
+$page_header = "Welcome back, " . htmlspecialchars($current_user['name'] ?? '');
 $page_subheader = "Track your handmade orders, wishlist items and personalized maker updates";
+
 require_once __DIR__ . '/includes/header.php';
 
-$stats = get_customer_dashboard_stats($customer_id);
-$all_orders = get_all_orders();
-$my_orders = array_filter($all_orders, fn($o) => (int)$o['customer_id'] === (int)$customer_id);
-$products = get_all_products();
+echo '<h1 style="color:red">CUSTOMER INDEX IS WORKING</h1>';
+
+$stats = get_customer_dashboard_stats($customer_id, $pdo);
+$all_orders = get_all_orders($pdo);
+
+$my_orders = array_filter(
+    $all_orders,
+    fn($o) => (int)$o['customer_id'] === (int)$customer_id
+);
+
+$products = get_all_products($pdo);
 ?>
 
 <!-- 4 Key Customer Metric Cards -->
@@ -107,7 +121,7 @@ $products = get_all_products();
                 <div class="d-flex flex-column gap-3">
                     <?php foreach (array_slice($products, 0, 3) as $p): ?>
                         <div class="d-flex align-items-center gap-3 p-2 rounded-3 border bg-light">
-                            <img src="<?php echo $p['images'][0]; ?>" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" alt="">
+                            <img src="<?php echo htmlspecialchars($p['images'][0] ?? '../images/default-product.jpg'); ?>" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" alt="">
                             <div class="flex-grow-1 lh-1">
                                 <strong class="small text-dark d-block text-truncate mb-1" style="max-width: 150px;"><?php echo htmlspecialchars($p['name']); ?></strong>
                                 <span class="fw-bold text-maroon-800 small">₹<?php echo $p['price']; ?></span>
@@ -132,7 +146,7 @@ $products = get_all_products();
             <?php foreach (array_slice($products, 0, 4) as $p): ?>
                 <div class="col-md-6 col-lg-3">
                     <div class="card h-100 border rounded-3 overflow-hidden shadow-none hover-lift">
-                        <img src="<?php echo $p['images'][0]; ?>" style="height: 140px; object-fit: cover;" alt="">
+                        <img src="<?php echo htmlspecialchars($p['images'][0] ?? '../images/default-product.jpg'); ?>" style="height: 140px; object-fit: cover;" alt="">
                         <div class="p-3 d-flex flex-column justify-content-between flex-grow-1">
                             <div>
                                 <small class="text-muted d-block mb-1"><?php echo htmlspecialchars($p['category']); ?></small>

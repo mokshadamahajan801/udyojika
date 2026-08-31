@@ -545,3 +545,89 @@ function get_seller_by_id($seller_id, PDO $pdo)
 
     return $seller ?: null;
 }
+
+/**
+ * Get all orders with their items
+ */
+function get_all_orders(PDO $pdo)
+{
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM orders
+        ORDER BY created_at DESC
+    ");
+
+    $stmt->execute();
+
+    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($orders as &$order) {
+
+        $itemStmt = $pdo->prepare("
+            SELECT *
+            FROM order_items
+            WHERE order_id = ?
+        ");
+
+        $itemStmt->execute([$order['id']]);
+
+        $order['items'] = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    unset($order);
+
+    return $orders;
+}
+
+
+/**
+ * Get customer dashboard statistics
+ */
+function get_customer_dashboard_stats($customer_id, PDO $pdo)
+{
+    $stmt = $pdo->prepare("
+        SELECT
+            COUNT(*) AS total_orders,
+
+            SUM(
+                CASE
+                    WHEN order_status IN ('pending', 'processing')
+                    THEN 1
+                    ELSE 0
+                END
+            ) AS pending_orders,
+
+            SUM(
+                CASE
+                    WHEN order_status = 'completed'
+                    THEN 1
+                    ELSE 0
+                END
+            ) AS completed_orders,
+
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN payment_status = 'Paid'
+                        THEN total_amount
+                        ELSE 0
+                    END
+                ),
+                0
+            ) AS total_spent
+
+        FROM orders
+        WHERE customer_id = ?
+    ");
+
+    $stmt->execute([$customer_id]);
+
+    $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return [
+        'total_orders' => (int)($stats['total_orders'] ?? 0),
+        'pending_orders' => (int)($stats['pending_orders'] ?? 0),
+        'completed_orders' => (int)($stats['completed_orders'] ?? 0),
+        'total_spent' => (float)($stats['total_spent'] ?? 0)
+    ];
+}
