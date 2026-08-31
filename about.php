@@ -4,23 +4,49 @@ require_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- About Hero -->
-<div class="bg-cream-100 py-5 border-bottom">
-    <div class="container py-3">
+<div class="bg-cream-100 py-3 border-bottom">
+    <div class="container">
         <div class="row align-items-center g-5">
+
+            <!-- Text -->
             <div class="col-lg-6">
-                <span class="text-terracotta fw-bold text-uppercase small tracking-wide">Our Mission & Purpose</span>
-                <h1 class="display-5 font-serif fw-bold text-maroon-900 mb-3">Empowering Every Indian Home Maker to be an Entrepreneur</h1>
+
+                <span class="text-terracotta fw-bold text-uppercase small tracking-wide">
+                    Our Mission & Purpose
+                </span>
+
+                <h1 class="display-5 font-serif fw-bold text-maroon-900 mb-3">
+                    Empowering Every Indian Home Maker to be an Entrepreneur
+                </h1>
+
                 <p class="lead text-secondary mb-4">
-                    Udyojika was founded with a single mission: to provide Indian women a dignified, effortless, and financially rewarding platform to sell their authentic homemade products to consumers nationwide.
+                    Udyojika was founded with a single mission: to provide Indian women
+                    a dignified, effortless, and financially rewarding platform to sell
+                    their authentic homemade products to consumers nationwide.
                 </p>
+
                 <div class="d-flex gap-3">
-                    <a href="products.php" class="btn btn-maroon px-4 py-2">Explore Marketplace</a>
-                    <a href="become-seller.php" class="btn btn-outline-maroon px-4 py-2">Join as Maker</a>
+                    <a href="products.php" class="btn btn-maroon px-4 py-2">
+                        Explore Marketplace
+                    </a>
+
+                    <a href="become-seller.php" class="btn btn-outline-maroon px-4 py-2">
+                        Join as Maker
+                    </a>
                 </div>
+
             </div>
+
+            <!-- Image -->
             <div class="col-lg-6">
-                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop" class="img-fluid rounded-4 shadow-lg" alt="Women Entrepreneurs">
+
+                <img
+                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop"
+                    class="img-fluid rounded-4 shadow-lg about-hero-image"
+                    alt="Women Entrepreneurs">
+
             </div>
+
         </div>
     </div>
 </div>

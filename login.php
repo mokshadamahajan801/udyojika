@@ -13,6 +13,7 @@ require_once __DIR__ . '/includes/functions.php';
 
 $error_message = '';
 $info_message = '';
+$redirect_url = '';
 
 /*
 |--------------------------------------------------------------------------
@@ -93,31 +94,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             */
             switch ($user['role']) {
 
-                case 'admin':
-                    header('Location: admin/index.php');
-                    exit;
+    case 'admin':
+        $redirect_url = 'admin/index.php';
+        break;
 
-                case 'seller':
-                    header('Location: seller/index.php');
-                    exit;
+    case 'seller':
+        $redirect_url = 'seller/index.php';
+        break;
 
-                case 'customer':
-                    header('Location: customer/index.php');
-                    exit;
+    case 'customer':
+        $redirect_url = 'customer/index.php';
+        break;
 
-                default:
+    default:
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Invalid User Role
-                    |--------------------------------------------------------------------------
-                    */
-                    unset($_SESSION['user_id'], $_SESSION['user_role']);
+        unset($_SESSION['user_id'], $_SESSION['user_role']);
 
-                    $error_message =
-                        'Your account role is invalid. Please contact the administrator.';
-                    break;
-            }
+        $error_message =
+            'Your account role is invalid. Please contact the administrator.';
+        break;
+}
         } else {
 
             /*
@@ -136,6 +132,131 @@ $page_title = "Sign In - Udyojika";
 require_once __DIR__ . '/includes/header.php';
 ?>
 
+<?php if (!empty($redirect_url)): ?>
+
+<!-- Login Success Popup -->
+<div id="loginSuccessPopup" class="login-success-overlay">
+
+    <div class="login-success-modal">
+
+        <div class="login-success-icon">
+            <i class="fa-solid fa-check"></i>
+        </div>
+
+        <h2>Success!</h2>
+
+        <p>
+            Welcome back to Udyojika!<br>
+            You have successfully logged in.
+        </p>
+
+        <button
+            type="button"
+            class="login-success-btn"
+            onclick="continueAfterLogin()">
+            OK
+        </button>
+
+    </div>
+
+</div>
+
+<style>
+.login-success-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 20px;
+}
+
+.login-success-modal {
+    width: 100%;
+    max-width: 430px;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 65px 35px 35px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+    animation: loginPopup 0.25s ease-out;
+}
+
+.login-success-icon {
+    position: absolute;
+    top: -55px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+
+    background: #72c837;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 55px;
+    border: 8px solid rgba(255, 255, 255, 0.95);
+}
+
+.login-success-modal h2 {
+    margin: 20px 0 15px;
+    font-size: 42px;
+    font-weight: 400;
+    color: #333;
+}
+
+.login-success-modal p {
+    font-size: 18px;
+    line-height: 1.5;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.login-success-btn {
+    width: 100%;
+    border: none;
+    border-radius: 4px;
+    background: #72c837;
+    color: white;
+    padding: 15px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.login-success-btn:hover {
+    background: #61b52d;
+}
+
+@keyframes loginPopup {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+</style>
+
+<script>
+function continueAfterLogin() {
+    window.location.href = <?php echo json_encode($redirect_url); ?>;
+}
+</script>
+
+<?php endif; ?>
 
 <!-- Page Header -->
 <div class="bg-cream-100 py-4 border-bottom">

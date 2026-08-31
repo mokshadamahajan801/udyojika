@@ -1,9 +1,23 @@
 <?php
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/functions.php';
 
-$slug = isset($_GET['slug']) ? trim($_GET['slug']) : 'authentic-crunchy-bhajani-chakli';
+$slug = isset($_GET['slug'])
+    ? trim($_GET['slug'])
+    : 'authentic-crunchy-bhajani-chakli';
+
 $product = get_product_by_slug($slug, $pdo);
+
+if (!$product) {
+    die("Product not found.");
+}
+
 $seller = get_seller_by_id($product['seller_id'], $pdo);
+
+if (!$seller) {
+    die("Seller not found.");
+}
+
 $page_title = $product['name'];
 
 require_once __DIR__ . '/includes/header.php';

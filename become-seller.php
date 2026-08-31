@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Udyojika - Seller Application
  */
@@ -49,23 +50,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ) {
 
         $error_message = 'Please fill in all required fields.';
-
     } elseif (mb_strlen($full_name) < 2) {
 
         $error_message = 'Please enter a valid full name.';
-
     } elseif (mb_strlen($business_name) < 2) {
 
         $error_message = 'Please enter a valid business name.';
-
     } elseif (!preg_match('/^[0-9+\-\s]{10,15}$/', $phone)) {
 
         $error_message = 'Please enter a valid WhatsApp number.';
-
     } elseif (mb_strlen($description) < 10) {
 
         $error_message = 'Please provide a little more information about your products.';
-
     } else {
 
         try {
@@ -94,7 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $error_message =
                     'A seller application with this business name and owner name already exists.';
-
             } else {
 
                 /*
@@ -148,7 +143,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $category = '';
                 $description = '';
             }
-
         } catch (PDOException $e) {
 
             /*
@@ -163,6 +157,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 require_once __DIR__ . '/includes/header.php';
+
+$categories = get_categories($pdo);
+
 ?>
 
 <!-- Hero Banner -->
@@ -274,11 +271,10 @@ require_once __DIR__ . '/includes/header.php';
                                 required
                                 placeholder="e.g. Radhika Sharma"
                                 value="<?php echo htmlspecialchars(
-                                    $full_name ?? '',
-                                    ENT_QUOTES,
-                                    'UTF-8'
-                                ); ?>"
-                            >
+                                            $full_name ?? '',
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ); ?>">
 
                         </div>
 
@@ -296,11 +292,10 @@ require_once __DIR__ . '/includes/header.php';
                                 required
                                 placeholder="e.g. Radhika's Kitchen Masalas"
                                 value="<?php echo htmlspecialchars(
-                                    $business_name ?? '',
-                                    ENT_QUOTES,
-                                    'UTF-8'
-                                ); ?>"
-                            >
+                                            $business_name ?? '',
+                                            ENT_QUOTES,
+                                            'UTF-8'
+                                        ); ?>">
 
                         </div>
 
@@ -320,11 +315,10 @@ require_once __DIR__ . '/includes/header.php';
                                     required
                                     placeholder="+91 98765 43210"
                                     value="<?php echo htmlspecialchars(
-                                        $phone ?? '',
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ); ?>"
-                                >
+                                                $phone ?? '',
+                                                ENT_QUOTES,
+                                                'UTF-8'
+                                            ); ?>">
 
                             </div>
 
@@ -342,11 +336,10 @@ require_once __DIR__ . '/includes/header.php';
                                     required
                                     placeholder="e.g. Pune / Nagpur"
                                     value="<?php echo htmlspecialchars(
-                                        $city ?? '',
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ); ?>"
-                                >
+                                                $city ?? '',
+                                                ENT_QUOTES,
+                                                'UTF-8'
+                                            ); ?>">
 
                             </div>
 
@@ -362,52 +355,19 @@ require_once __DIR__ . '/includes/header.php';
                             <select
                                 name="category"
                                 class="form-select form-select-sm"
-                                required
-                            >
+                                required>
 
                                 <option value="">Select Category</option>
 
-                                <option
-                                    value="Homemade Food & Snacks"
-                                    <?php echo (($category ?? '') === 'Homemade Food & Snacks') ? 'selected' : ''; ?>
-                                >
-                                    Homemade Food & Snacks
-                                </option>
+                                <?php foreach ($categories as $cat): ?>
 
-                                <option
-                                    value="Pickles & Spices"
-                                    <?php echo (($category ?? '') === 'Pickles & Spices') ? 'selected' : ''; ?>
-                                >
-                                    Traditional Pickles & Spices
-                                </option>
+                                    <option
+                                        value="<?php echo htmlspecialchars($cat['name']); ?>"
+                                        <?php echo (($category ?? '') === $cat['name']) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($cat['name']); ?>
+                                    </option>
 
-                                <option
-                                    value="Handmade Jewellery"
-                                    <?php echo (($category ?? '') === 'Handmade Jewellery') ? 'selected' : ''; ?>
-                                >
-                                    Handmade Jewellery & Crafts
-                                </option>
-
-                                <option
-                                    value="Clothing & Kurtis"
-                                    <?php echo (($category ?? '') === 'Clothing & Kurtis') ? 'selected' : ''; ?>
-                                >
-                                    Custom Clothing & Sarees
-                                </option>
-
-                                <option
-                                    value="Candles & Aromas"
-                                    <?php echo (($category ?? '') === 'Candles & Aromas') ? 'selected' : ''; ?>
-                                >
-                                    Natural Candles & Aromas
-                                </option>
-
-                                <option
-                                    value="Organic Beauty"
-                                    <?php echo (($category ?? '') === 'Organic Beauty') ? 'selected' : ''; ?>
-                                >
-                                    Herbal Beauty & Soaps
-                                </option>
+                                <?php endforeach; ?>
 
                             </select>
 
@@ -425,20 +385,18 @@ require_once __DIR__ . '/includes/header.php';
                                 class="form-control form-control-sm"
                                 rows="2"
                                 required
-                                placeholder="Describe your recipes, ingredients or handmade products..."
-                            ><?php echo htmlspecialchars(
-                                $description ?? '',
-                                ENT_QUOTES,
-                                'UTF-8'
-                            ); ?></textarea>
+                                placeholder="Describe your recipes, ingredients or handmade products..."><?php echo htmlspecialchars(
+                                                                                                                $description ?? '',
+                                                                                                                ENT_QUOTES,
+                                                                                                                'UTF-8'
+                                                                                                            ); ?></textarea>
 
                         </div>
 
 
                         <button
                             type="submit"
-                            class="btn btn-maroon w-100 py-2 fw-bold"
-                        >
+                            class="btn btn-maroon w-100 py-2 fw-bold">
                             Submit Seller Application
                             <i class="fa-solid fa-arrow-right ms-1"></i>
                         </button>

@@ -48,7 +48,7 @@ if ($sort === 'price-low') {
 
                 <li class="breadcrumb-item">
                     <a href="index.php"
-                       class="text-decoration-none text-muted">
+                        class="text-decoration-none text-muted">
                         Home
                     </a>
                 </li>
@@ -112,7 +112,7 @@ if ($sort === 'price-low') {
 
 <div class="container py-5">
     <div class="row g-4">
-        
+
         <!-- Left Sidebar Filter -->
         <div class="col-lg-3">
             <div class="bg-white p-4 rounded-4 shadow-sm border sticky-top" style="top: 100px; z-index: 10;">
@@ -129,8 +129,8 @@ if ($sort === 'price-low') {
                             All Categories (<?php echo count($all_products); ?>)
                         </a>
                         <?php foreach ($categories as $cat): ?>
-                            <a href="products.php?category=<?php echo urlencode($cat['slug']); ?>" 
-                               class="list-group-item list-group-item-action px-2 py-2 border-0 rounded d-flex justify-content-between align-items-center <?php echo $selected_category === $cat['slug'] ? 'bg-cream-200 fw-bold text-maroon-800' : ''; ?>">
+                            <a href="products.php?category=<?php echo urlencode($cat['slug']); ?>"
+                                class="list-group-item list-group-item-action px-2 py-2 border-0 rounded d-flex justify-content-between align-items-center <?php echo $selected_category === $cat['slug'] ? 'bg-cream-200 fw-bold text-maroon-800' : ''; ?>">
                                 <span><i class="fa-solid <?php echo htmlspecialchars($cat['icon']); ?> me-2 text-terracotta"></i> <?php echo htmlspecialchars($cat['name']); ?></span>
                                 <span class="badge bg-light text-muted border"><?php echo $cat['product_count']; ?></span>
                             </a>
@@ -148,7 +148,7 @@ if ($sort === 'price-low') {
 
         <!-- Right Product Grid -->
         <div class="col-lg-9">
-            
+
             <!-- Controls Bar -->
             <div class="bg-white p-3 rounded-4 shadow-sm border mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div class="d-flex align-items-center gap-2">
@@ -188,7 +188,19 @@ if ($sort === 'price-low') {
                                         <i class="fa-regular fa-heart"></i>
                                     </button>
                                     <a href="product-details.php?slug=<?php echo urlencode($product['slug']); ?>">
-                                        <img src="<?php echo htmlspecialchars($product['images'][0]); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                                        <?php if (!empty($product['images'][0])): ?>
+
+                                            <img
+                                                src="<?php echo htmlspecialchars($product['images'][0]); ?>"
+                                                alt="<?php echo htmlspecialchars($product['name']); ?>">
+
+                                        <?php else: ?>
+
+                                            <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                                <i class="fa-solid fa-image text-muted fs-1"></i>
+                                            </div>
+
+                                        <?php endif; ?>
                                     </a>
                                 </div>
                                 <div class="p-3 d-flex flex-column flex-grow-1">
@@ -202,8 +214,23 @@ if ($sort === 'price-low') {
                                         </a>
                                     </h6>
                                     <div class="d-flex align-items-center gap-2 mb-3">
-                                        <img src="<?php echo htmlspecialchars($product['seller_avatar']); ?>" class="rounded-circle" style="width: 20px; height: 20px; object-fit: cover;" alt="Maker">
-                                        <small class="text-muted text-truncate">By <?php echo htmlspecialchars($product['seller_name']); ?></small>
+                                        <?php if (!empty($product['seller_avatar'])): ?>
+
+                                            <img
+                                                src="<?php echo htmlspecialchars($product['seller_avatar']); ?>"
+                                                class="rounded-circle"
+                                                style="width: 20px; height: 20px; object-fit: cover;"
+                                                alt="Maker">
+
+                                        <?php else: ?>
+
+                                            <span
+                                                class="rounded-circle bg-cream-200 d-inline-flex align-items-center justify-content-center"
+                                                style="width: 20px; height: 20px;">
+                                                <i class="fa-solid fa-user text-muted" style="font-size: 10px;"></i>
+                                            </span>
+
+                                        <?php endif; ?> <small class="text-muted text-truncate">By <?php echo htmlspecialchars($product['seller_name']); ?></small>
                                     </div>
                                     <div class="mt-auto d-flex align-items-center justify-content-between pt-2 border-top">
                                         <div>
@@ -212,7 +239,18 @@ if ($sort === 'price-low') {
                                                 <span class="text-muted text-decoration-line-through small ms-1">₹<?php echo number_format($product['original_price']); ?></span>
                                             <?php endif; ?>
                                         </div>
-                                        <button type="button" class="btn btn-maroon btn-sm px-3" onclick="window.addToCart('<?php echo $product['id']; ?>', '<?php echo addslashes($product['name']); ?>', <?php echo $product['price']; ?>, '<?php echo $product['images'][0]; ?>', '<?php echo addslashes($product['seller_name']); ?>', '<?php echo addslashes($product['unit']); ?>', 1)">
+                                        <button
+                                            type="button"
+                                            class="btn btn-maroon btn-sm px-3"
+                                            onclick="window.addToCart(
+        '<?php echo $product['id']; ?>',
+        '<?php echo addslashes($product['name']); ?>',
+        <?php echo $product['price']; ?>,
+        '<?php echo !empty($product['images'][0]) ? htmlspecialchars($product['images'][0], ENT_QUOTES) : ''; ?>',
+        '<?php echo addslashes($product['seller_name']); ?>',
+        '<?php echo addslashes($product['unit']); ?>',
+        1
+    )">
                                             <i class="fa-solid fa-plus me-1"></i> Add
                                         </button>
                                     </div>

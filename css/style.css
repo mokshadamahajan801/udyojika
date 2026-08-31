@@ -408,3 +408,21 @@ footer a:hover {
 
     font-size: 32px;
 }
+
+.about-hero-image {
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+}
+
+@media (max-width: 991px) {
+    .about-hero-image {
+        height: 400px;
+    }
+}
+
+@media (max-width: 576px) {
+    .about-hero-image {
+        height: 300px;
+    }
+}

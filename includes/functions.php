@@ -12,22 +12,81 @@
 function get_all_products(PDO $pdo)
 {
     $sql = "
-        SELECT 
+        SELECT
             p.*,
-            s.business_name,
-            s.owner_name
+
+            /* Category information */
+            c.slug AS category_slug,
+
+            /* Seller information */
+            s.business_name AS seller_name,
+            s.owner_name AS seller_owner,
+            s.avatar AS seller_avatar
+
         FROM products p
-        LEFT JOIN sellers s ON p.seller_id = s.id
+
+        LEFT JOIN categories c
+            ON p.category_id = c.id
+
+        LEFT JOIN sellers s
+            ON p.seller_id = s.id
+
         WHERE p.status = 'active'
+
         ORDER BY p.created_at DESC
     ";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
 
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    foreach ($products as &$product) {
+
+        // Category
+        $product['category'] =
+            $product['category_name'] ?? 'Uncategorized';
+
+        $product['category_slug'] =
+            $product['category_slug'] ?? '';
+
+
+        // Seller name
+        $product['seller_name'] =
+            $product['seller_name']
+            ?? $product['seller_owner']
+            ?? 'Unknown Maker';
+
+
+        // Seller avatar
+        $product['seller_avatar'] =
+            $product['seller_avatar'] ?? '';
+
+
+        // Product images
+        $raw_images = $product['images'] ?? null;
+
+        if (!empty($raw_images)) {
+
+            $decoded_images = json_decode(
+                $raw_images,
+                true
+            );
+
+            if (is_array($decoded_images)) {
+                $product['images'] = $decoded_images;
+            } else {
+                $product['images'] = [$raw_images];
+            }
+        } else {
+            $product['images'] = [];
+        }
+    }
+
+    unset($product);
+
+    return $products;
+}
 
 /**
  * Get all active categories
@@ -43,7 +102,41 @@ function get_categories(PDO $pdo)
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
 
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Get Popular Products For Each Category
+    |--------------------------------------------------------------------------
+    */
+
+    foreach ($categories as &$category) {
+
+        $category['popular_items'] = [];
+
+        $productStmt = $pdo->prepare("
+            SELECT p.name
+            FROM products p
+            WHERE (
+                p.category_id = ?
+                OR p.category_name = ?
+            )
+            AND p.status = 'active'
+            ORDER BY p.is_featured DESC, p.created_at DESC
+            LIMIT 5
+        ");
+
+        $productStmt->execute([
+            $category['id'],
+            $category['name']
+        ]);
+
+        $category['popular_items'] = $productStmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    unset($category);
+
+    return $categories;
 }
 
 
@@ -374,4 +467,75 @@ function logout_user()
     }
 
     session_destroy();
+}
+
+function get_product_by_slug($slug, PDO $pdo)
+{
+    $stmt = $pdo->prepare("
+    SELECT 
+        p.*,
+        c.name AS category,
+        c.slug AS category_slug,
+        b.business_name AS seller_name
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    LEFT JOIN sellers b ON p.seller_id = b.id
+    WHERE p.slug = ?
+    LIMIT 1
+");
+
+    $stmt->execute([$slug]);
+
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$product) {
+        return null;
+    }
+
+    // Convert image data into an array
+    if (!empty($product['images'])) {
+        $decoded = json_decode($product['images'], true);
+
+        if (is_array($decoded)) {
+            $product['images'] = $decoded;
+        } else {
+            $product['images'] = [$product['images']];
+        }
+    } else {
+        $product['images'] = ['assets/images/default-product.jpg'];
+    }
+
+    // Convert ingredients into an array
+    if (!empty($product['ingredients'])) {
+        $decoded = json_decode($product['ingredients'], true);
+
+        if (is_array($decoded)) {
+            $product['ingredients'] = $decoded;
+        } else {
+            $product['ingredients'] = array_map(
+                'trim',
+                explode(',', $product['ingredients'])
+            );
+        }
+    } else {
+        $product['ingredients'] = [];
+    }
+
+    return $product;
+}
+
+function get_seller_by_id($seller_id, PDO $pdo)
+{
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM sellers
+        WHERE id = ?
+        LIMIT 1
+    ");
+
+    $stmt->execute([$seller_id]);
+
+    $seller = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $seller ?: null;
 }

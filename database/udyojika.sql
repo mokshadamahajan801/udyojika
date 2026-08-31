@@ -189,6 +189,20 @@ CREATE TABLE `addresses` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
+-- PASSWORD RESETS TABLE
+DROP TABLE IF EXISTS `password_resets`;
+
+CREATE TABLE `password_resets` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `email` VARCHAR(150) NOT NULL,
+  `otp` VARCHAR(10) NOT NULL,
+  `expires_at` DATETIME NOT NULL,
+  `verified` TINYINT(1) DEFAULT 0,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
 -- -- -------------------------------------------------------------
 -- -- SAMPLE SEED DATA
 -- -- -------------------------------------------------------------
