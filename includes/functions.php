@@ -21,7 +21,8 @@ function get_all_products(PDO $pdo)
             /* Seller information */
             s.business_name AS seller_name,
             s.owner_name AS seller_owner,
-            s.avatar AS seller_avatar
+            s.avatar AS seller_avatar,
+            s.location AS seller_location
 
         FROM products p
 
@@ -63,6 +64,11 @@ function get_all_products(PDO $pdo)
             $product['seller_avatar'] ?? '';
 
 
+        // Seller location
+        $product['seller_location'] =
+            $product['seller_location'] ?? 'Location not available';
+
+
         // Product images
         $raw_images = $product['images'] ?? null;
 
@@ -78,6 +84,7 @@ function get_all_products(PDO $pdo)
             } else {
                 $product['images'] = [$raw_images];
             }
+
         } else {
             $product['images'] = [];
         }
@@ -87,7 +94,6 @@ function get_all_products(PDO $pdo)
 
     return $products;
 }
-
 /**
  * Get all active categories
  */

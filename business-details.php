@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/functions.php';
 
 $seller_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
 $seller = get_seller_by_id($seller_id, $pdo);
@@ -86,9 +87,20 @@ require_once __DIR__ . '/includes/header.php';
                                         <span class="fs-5 fw-bold text-maroon-800">₹<?php echo number_format($product['price']); ?></span>
                                         <small class="text-muted d-block" style="font-size: 0.75rem;">/ <?php echo htmlspecialchars($product['unit']); ?></small>
                                     </div>
-                                    <button type="button" class="btn btn-maroon btn-sm px-3" onclick="window.addToCart('<?php echo $product['id']; ?>', '<?php echo addslashes($product['name']); ?>', <?php echo $product['price']; ?>, '<?php echo $product['images'][0]; ?>', '<?php echo addslashes($product['seller_name']); ?>', '<?php echo addslashes($product['unit']); ?>', 1)">
-                                        <i class="fa-solid fa-plus me-1"></i> Add
-                                    </button>
+                                    <button
+                                            type="button"
+                                            class="btn btn-maroon btn-sm px-3"
+                                            onclick="window.addToCart(
+        '<?php echo $product['id']; ?>',
+        '<?php echo addslashes($product['name']); ?>',
+        <?php echo $product['price']; ?>,
+        '<?php echo !empty($product['images'][0]) ? htmlspecialchars($product['images'][0], ENT_QUOTES) : ''; ?>',
+        '<?php echo addslashes($product['seller_name']); ?>',
+        '<?php echo addslashes($product['unit']); ?>',
+        1
+    )">
+                                            <i class="fa-solid fa-plus me-1"></i> Add
+                                        </button>
                                 </div>
                             </div>
                         </div>
