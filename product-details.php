@@ -1,26 +1,115 @@
 <?php
+
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/functions.php';
 
-$slug = isset($_GET['slug'])
-    ? trim($_GET['slug'])
-    : 'authentic-crunchy-bhajani-chakli';
+$slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
 
-$product = get_product_by_slug($slug, $pdo);
+$product = null;
+$seller = null;
+
+/*
+|--------------------------------------------------------------------------
+| Get Product From Database
+|--------------------------------------------------------------------------
+*/
+
+$stmt = $pdo->prepare("
+    SELECT 
+        p.*,
+        c.name AS category_name,
+        c.slug AS category_slug,
+
+        s.id AS seller_id,
+        s.business_name AS seller_name,
+        s.owner_name AS seller_owner,
+        s.location AS seller_location,
+        s.avatar AS seller_avatar,
+        s.rating AS seller_rating,
+        s.review_count AS seller_review_count,
+        s.short_bio AS seller_short_bio,
+        s.whatsapp AS seller_whatsapp
+
+    FROM products p
+
+    LEFT JOIN categories c
+        ON p.category_id = c.id
+
+    LEFT JOIN sellers s
+        ON p.seller_id = s.id
+
+    WHERE p.slug = ?
+    LIMIT 1
+");
+
+$stmt->execute([$slug]);
+
+$product = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+/*
+|--------------------------------------------------------------------------
+| Product Not Found
+|--------------------------------------------------------------------------
+*/
 
 if (!$product) {
-    die("Product not found.");
+    die('Product not found.');
 }
 
-$seller = get_seller_by_id($product['seller_id'], $pdo);
 
-if (!$seller) {
-    die("Seller not found.");
+/*
+|--------------------------------------------------------------------------
+| Prepare Product Data
+|--------------------------------------------------------------------------
+*/
+
+$product['category'] = $product['category_name'] ?? 'Uncategorized';
+
+
+// Decode product images
+$raw_images = $product['images'] ?? null;
+
+if (!empty($raw_images)) {
+
+    $decoded_images = json_decode($raw_images, true);
+
+    if (is_array($decoded_images)) {
+        $product['images'] = $decoded_images;
+    } else {
+        $product['images'] = [$raw_images];
+    }
+
+} else {
+    $product['images'] = [];
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Seller Data
+|--------------------------------------------------------------------------
+*/
+
+if (!empty($product['seller_id'])) {
+
+    $seller = [
+        'id' => $product['seller_id'],
+        'business_name' => $product['seller_name'] ?? 'Unknown Seller',
+        'owner_name' => $product['seller_owner'] ?? '',
+        'location' => $product['seller_location'] ?? '',
+        'avatar' => $product['seller_avatar'] ?? '',
+        'rating' => $product['seller_rating'] ?? 5,
+        'review_count' => $product['seller_review_count'] ?? 0,
+        'short_bio' => $product['seller_short_bio'] ?? '',
+        'whatsapp' => $product['seller_whatsapp'] ?? ''
+    ];
 }
 
 $page_title = $product['name'];
 
 require_once __DIR__ . '/includes/header.php';
+
 ?>
 
 <!-- Breadcrumb -->

@@ -5,6 +5,33 @@ $page_title = "Homemade with Love | Empowering Women Home Entrepreneurs";
 require_once __DIR__ . '/includes/header.php';
 
 $products = get_all_products($pdo);
+
+// Dynamic Hero Product
+$hero_product = $products[0] ?? null;
+
+$hero_image = '';
+$hero_seller_name = 'Our Seller';
+$hero_seller_location = 'India';
+$hero_seller_avatar = '';
+
+if ($hero_product) {
+
+    // Product image
+    if (!empty($hero_product['images']) && is_array($hero_product['images'])) {
+        $hero_image = $hero_product['images'][0];
+    }
+
+    // Seller information
+    $hero_seller_name = $hero_product['seller_name'] ?? 'Our Seller';
+    $hero_seller_location = $hero_product['seller_location'] ?? 'India';
+    $hero_seller_avatar = $hero_product['seller_avatar'] ?? '';
+}
+
+// Fallback image if product has no image
+if (empty($hero_image)) {
+    $hero_image = 'assets/images/default-product.jpg';
+}
+
 $categories = $categories_nav;
 $sellers = get_sellers($pdo);
 
@@ -55,20 +82,20 @@ $sellers = get_sellers($pdo);
             </div>
             <div class="col-lg-6 position-relative">
                 <div class="position-relative p-2">
-                    <img src="https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?q=80&w=800&auto=format&fit=crop" 
-                         alt="Fresh Homemade Snacks" 
-                         class="img-fluid rounded-4 shadow-lg w-100" 
-                         style="max-height: 480px; object-fit: cover;">
+                    <img src="images/img.png"
+     alt="Handmade products crafted by women"
+     class="img-fluid rounded-4 shadow-lg w-100"
+     style="height: 500px; object-fit: cover;">
                     
                     <!-- Floating Seller Badge -->
-                    <div class="position-absolute bottom-0 start-0 translate-middle-y bg-white p-3 rounded-4 shadow-lg d-flex align-items-center gap-3 ms-3 mb-2 border border-warning" style="max-width: 280px;">
+                    <!-- <div class="position-absolute bottom-0 start-0 translate-middle-y bg-white p-3 rounded-4 shadow-lg d-flex align-items-center gap-3 ms-3 mb-2 border border-warning" style="max-width: 280px;">
                         <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=150&auto=format&fit=crop" class="rounded-circle shadow-sm" style="width: 50px; height: 50px; object-fit: cover;" alt="Sunita">
                         <div>
                             <h6 class="mb-0 fw-bold text-maroon-800">Sunita Kulkarni</h6>
                             <small class="text-muted d-block">Annapurna Swaad, Pune</small>
                             <span class="badge bg-success py-1 px-2"><i class="fa-solid fa-star text-warning me-1"></i> 4.9 (184 reviews)</span>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
