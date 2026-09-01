@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Udyojika - Seller Application
  */
@@ -18,20 +17,29 @@ $error_message = '';
 
 /*
 |--------------------------------------------------------------------------
-| Check Login
+| Default Form Values
 |--------------------------------------------------------------------------
-| A seller application must belong to an existing user.
+*/
+
+$full_name = '';
+$business_name = '';
+$phone = '';
+$city = '';
+$category = '';
+$description = '';
+
+/*
+|--------------------------------------------------------------------------
+| Check Login
 |--------------------------------------------------------------------------
 */
 
 if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
-
     header('Location: login.php?msg=auth_required');
     exit;
 }
 
 $current_user_id = (int) $_SESSION['user_id'];
-
 
 /*
 |--------------------------------------------------------------------------
@@ -47,11 +55,9 @@ $user_stmt = $pdo->prepare("
 ");
 
 $user_stmt->execute([$current_user_id]);
-
 $current_user = $user_stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$current_user) {
-
     unset(
         $_SESSION['user'],
         $_SESSION['user_id'],
@@ -62,7 +68,6 @@ if (!$current_user) {
     exit;
 }
 
-
 /*
 |--------------------------------------------------------------------------
 | Prevent Admin / Existing Seller From Applying Again
@@ -70,17 +75,29 @@ if (!$current_user) {
 */
 
 if ($current_user['role'] === 'seller') {
-
     header('Location: seller/index.php');
     exit;
 }
 
 if ($current_user['role'] === 'admin') {
-
     header('Location: admin/index.php');
     exit;
 }
 
+/*
+|--------------------------------------------------------------------------
+| Show Success Message After Redirect
+|--------------------------------------------------------------------------
+|
+| This prevents the browser from submitting the same POST again
+| when the page is refreshed.
+|--------------------------------------------------------------------------
+*/
+
+if (!empty($_SESSION['seller_application_success'])) {
+    $success_message = $_SESSION['seller_application_success'];
+    unset($_SESSION['seller_application_success']);
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -90,12 +107,6 @@ if ($current_user['role'] === 'admin') {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Get Form Data
-    |--------------------------------------------------------------------------
-    */
-
     $full_name = trim($_POST['full_name'] ?? '');
     $business_name = trim($_POST['business_name'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
@@ -103,10 +114,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $category = trim($_POST['category'] ?? '');
     $description = trim($_POST['description'] ?? '');
 
-
     /*
     |--------------------------------------------------------------------------
-    | Validate Required Fields
+    | Validation
     |--------------------------------------------------------------------------
     */
 
@@ -135,7 +145,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } elseif (mb_strlen($description) < 10) {
 
-        $error_message = 'Please provide a little more information about your products.';
+        $error_message =
+            'Please provide a little more information about your products.';
 
     } else {
 
@@ -143,98 +154,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             /*
             |--------------------------------------------------------------------------
-            | Check Existing Application For This User
+            | Check Existing Application For This Logged-in User
             |--------------------------------------------------------------------------
             */
 
             $check_stmt = $pdo->prepare("
                 SELECT id, status
-                FROM sellers
+                FROM seller_requests
                 WHERE user_id = ?
+                ORDER BY id DESC
                 LIMIT 1
             ");
 
             $check_stmt->execute([$current_user_id]);
 
-            $existing_seller = $check_stmt->fetch(PDO::FETCH_ASSOC);
+            $existing_request = $check_stmt->fetch(PDO::FETCH_ASSOC);
 
+            /*
+            |--------------------------------------------------------------------------
+            | Existing Pending Application
+            |--------------------------------------------------------------------------
+            */
 
-            if ($existing_seller) {
+            if (
+                $existing_request &&
+                $existing_request['status'] === 'pending'
+            ) {
 
-                if ($existing_seller['status'] === 'pending') {
+                $error_message =
+                    'Your seller application is already pending approval. Please wait for the administrator to review it.';
 
-                    $error_message =
-                        'Your seller application is already pending approval. Please wait for the administrator to review it.';
+            /*
+            |--------------------------------------------------------------------------
+            | Existing Approved Application
+            |--------------------------------------------------------------------------
+            */
 
-                } elseif ($existing_seller['status'] === 'approved') {
+            } elseif (
+                $existing_request &&
+                $existing_request['status'] === 'approved'
+            ) {
 
-                    $error_message =
-                        'Your seller application has already been approved. Please sign in again to access your seller dashboard.';
+                $error_message =
+                    'Your seller application has already been approved. Please sign in again to access your seller dashboard.';
 
-                } elseif ($existing_seller['status'] === 'rejected') {
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Allow Re-application After Rejection
-                    |--------------------------------------------------------------------------
-                    */
-
-                    $stmt = $pdo->prepare("
-                        UPDATE sellers
-                        SET
-                            business_name = ?,
-                            owner_name = ?,
-                            location = ?,
-                            status = 'pending',
-                            created_at = NOW()
-                        WHERE id = ?
-                    ");
-
-                    $stmt->execute([
-                        $business_name,
-                        $full_name,
-                        $city,
-                        $existing_seller['id']
-                    ]);
-
-                    $success_message =
-                        "Thank you, " .
-                        htmlspecialchars($full_name, ENT_QUOTES, 'UTF-8') .
-                        "! Your seller application has been resubmitted and is now pending admin approval.";
-
-                    $full_name = '';
-                    $business_name = '';
-                    $phone = '';
-                    $city = '';
-                    $category = '';
-                    $description = '';
-                }
+            /*
+            |--------------------------------------------------------------------------
+            | New Application
+            |--------------------------------------------------------------------------
+            */
 
             } else {
 
-                /*
-                |--------------------------------------------------------------------------
-                | Create New Seller Application
-                |--------------------------------------------------------------------------
-                |
-                | IMPORTANT:
-                | The user's role is NOT changed here.
-                | It remains "customer" until admin approval.
-                |--------------------------------------------------------------------------
-                */
-
                 $stmt = $pdo->prepare("
-                    INSERT INTO sellers
+                    INSERT INTO seller_requests
                     (
                         user_id,
+                        full_name,
                         business_name,
-                        owner_name,
-                        location,
+                        phone,
+                        city,
+                        category,
+                        description,
+                        sample_products,
                         status,
                         created_at
                     )
                     VALUES
                     (
+                        ?,
+                        ?,
+                        ?,
+                        ?,
                         ?,
                         ?,
                         ?,
@@ -246,59 +237,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $stmt->execute([
                     $current_user_id,
-                    $business_name,
                     $full_name,
-                    $city
+                    $business_name,
+                    $phone,
+                    $city,
+                    $category,
+                    $description,
+                    ''
                 ]);
-
 
                 /*
                 |--------------------------------------------------------------------------
-                | Success Message
+                | Success Flash Message
                 |--------------------------------------------------------------------------
                 */
 
-                $success_message =
+                $_SESSION['seller_application_success'] =
                     "Thank you, " .
-                    htmlspecialchars($full_name, ENT_QUOTES, 'UTF-8') .
+                    htmlspecialchars(
+                        $full_name,
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) .
                     "! Your application for '" .
-                    htmlspecialchars($business_name, ENT_QUOTES, 'UTF-8') .
+                    htmlspecialchars(
+                        $business_name,
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) .
                     "' has been received. Our Women Entrepreneurship cell will review your application.";
 
                 /*
                 |--------------------------------------------------------------------------
-                | Clear Submitted Form Values
+                | POST -> Redirect -> GET
                 |--------------------------------------------------------------------------
                 */
 
-                $full_name = '';
-                $business_name = '';
-                $phone = '';
-                $city = '';
-                $category = '';
-                $description = '';
+                header('Location: become-seller.php');
+                exit;
             }
 
         } catch (PDOException $e) {
 
             /*
             |--------------------------------------------------------------------------
-            | Database Error
+            | Temporary detailed database error
+            |--------------------------------------------------------------------------
+            |
+            | This helps us find the exact database problem if INSERT fails.
+            | Once everything works, this can be changed to a generic message.
             |--------------------------------------------------------------------------
             */
 
             $error_message =
-                'We could not submit your application right now. Please try again later.';
+                'DATABASE ERROR: ' . $e->getMessage();
         }
     }
 }
 
-require_once __DIR__ . '/includes/header.php';
+/*
+|--------------------------------------------------------------------------
+| Get Categories From Database
+|--------------------------------------------------------------------------
+*/
 
 $categories = get_categories($pdo);
 
 ?>
-
 <!-- Hero Banner -->
 <div class="bg-maroon-900 text-white py-5">
     <div class="container py-4">
@@ -408,10 +413,10 @@ $categories = get_categories($pdo);
                                 required
                                 placeholder="e.g. Radhika Sharma"
                                 value="<?php echo htmlspecialchars(
-                                            $full_name ?? '',
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>">
+                                    $full_name ?? '',
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ); ?>">
 
                         </div>
 
@@ -429,10 +434,10 @@ $categories = get_categories($pdo);
                                 required
                                 placeholder="e.g. Radhika's Kitchen Masalas"
                                 value="<?php echo htmlspecialchars(
-                                            $business_name ?? '',
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        ); ?>">
+                                    $business_name ?? '',
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ); ?>">
 
                         </div>
 
@@ -452,10 +457,10 @@ $categories = get_categories($pdo);
                                     required
                                     placeholder="+91 98765 43210"
                                     value="<?php echo htmlspecialchars(
-                                                $phone ?? '',
-                                                ENT_QUOTES,
-                                                'UTF-8'
-                                            ); ?>">
+                                        $phone ?? '',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>">
 
                             </div>
 
@@ -473,10 +478,10 @@ $categories = get_categories($pdo);
                                     required
                                     placeholder="e.g. Pune / Nagpur"
                                     value="<?php echo htmlspecialchars(
-                                                $city ?? '',
-                                                ENT_QUOTES,
-                                                'UTF-8'
-                                            ); ?>">
+                                        $city ?? '',
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>">
 
                             </div>
 
@@ -499,9 +504,11 @@ $categories = get_categories($pdo);
                                 <?php foreach ($categories as $cat): ?>
 
                                     <option
-                                        value="<?php echo htmlspecialchars($cat['name']); ?>"
+                                        value="<?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?>"
                                         <?php echo (($category ?? '') === $cat['name']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($cat['name']); ?>
+
+                                        <?php echo htmlspecialchars($cat['name'], ENT_QUOTES, 'UTF-8'); ?>
+
                                     </option>
 
                                 <?php endforeach; ?>
@@ -523,10 +530,10 @@ $categories = get_categories($pdo);
                                 rows="2"
                                 required
                                 placeholder="Describe your recipes, ingredients or handmade products..."><?php echo htmlspecialchars(
-                                                                                                                $description ?? '',
-                                                                                                                ENT_QUOTES,
-                                                                                                                'UTF-8'
-                                                                                                            ); ?></textarea>
+                                    $description ?? '',
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                ); ?></textarea>
 
                         </div>
 

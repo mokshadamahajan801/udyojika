@@ -202,6 +202,9 @@ CREATE TABLE `password_resets` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `phone`, `avatar`, `status`, `created_at`, `updated_at`, `remember_token`, `remember_expires`) VALUES
+(1, 'Mokshada Mahajan', 'mokshadamahajan2008@gmail.com', '$2y$10$Ip2vTovZpEs63XzLc1.8G.x8ZlAwO2pDJGLCSXrR0Dz1yFdgpNqNm', 'seller', '8263046422', NULL, 'active', '2026-08-27 19:27:58', '2026-08-31 23:02:34', NULL, NULL),
+(2, 'Udyojika Admin', 'admin@udyojika.com', '$2y$10$tu/1igeKYOmmOzaaxTo8YucWl4.Jo0zzxZ9y7w8xOVycT0tLsJhti', 'admin', NULL, NULL, 'active', '2026-09-01 18:07:18', '2026-09-01 18:15:02', NULL, NULL);
 
 -- -- -------------------------------------------------------------
 -- -- SAMPLE SEED DATA
