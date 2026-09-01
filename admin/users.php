@@ -1,12 +1,20 @@
 <?php
+
+require_once __DIR__ . '/includes/auth.php';
+require_admin();
+
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
 $page_title = "Manage Users - Admin Portal";
 $page_header = "User & Account Directory";
 $page_subheader = "View, filter and manage all admins, women sellers and customer accounts";
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/../includes/functions.php';
 
 $users = get_all_users();
+
 $filter_role = $_GET['role'] ?? 'all';
+
+require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
@@ -93,9 +101,25 @@ $filter_role = $_GET['role'] ?? 'all';
                         <td class="small text-muted"><?php echo date('d M, Y', strtotime($u['created_at'])); ?></td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <button class="btn btn-light border" title="Edit User" onclick="alert('Editing User #<?php echo $u['id']; ?>');"><i class="fa-solid fa-pen"></i></button>
+                                <a
+                                    href="user-view.php?id=<?php echo $u['id']; ?>"
+                                    class="btn btn-light border"
+                                    title="View User">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                <a
+                                    href="user-edit.php?id=<?php echo $u['id']; ?>"
+                                    class="btn btn-light border"
+                                    title="Edit User">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
                                 <?php if ($u['role'] !== 'admin'): ?>
-                                    <button class="btn btn-light border text-danger" title="Suspend/Block User" onclick="if(confirm('Suspend account for <?php echo htmlspecialchars($u['name']); ?>?')) alert('User suspended.');"><i class="fa-solid fa-ban"></i></button>
+                                    <a href="user-suspend.php?id=<?php echo $u['id']; ?>"
+                                        class="btn btn-light border text-danger"
+                                        title="<?php echo $u['status'] === 'active' ? 'Suspend User' : 'Activate User'; ?>"
+                                        onclick="return confirm('<?php echo $u['status'] === 'active' ? 'Suspend' : 'Activate'; ?> account for <?php echo htmlspecialchars($u['name']); ?>?');">
+                                        <i class="fa-solid <?php echo $u['status'] === 'active' ? 'fa-ban' : 'fa-check'; ?>"></i>
+                                    </a>
                                 <?php endif; ?>
                             </div>
                         </td>

@@ -111,7 +111,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <small class="text-white-50" style="font-size: 0.75rem;">Administrator</small>
             </div>
         </div>
-        <a href="../logout.php" class="btn btn-outline-light btn-sm w-100 py-1" style="font-size: 0.82rem;">
+        <a href="logout.php" class="btn btn-outline-light btn-sm w-100 py-1" style="font-size: 0.82rem;">
             <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Sign Out
         </a>
     </div>
