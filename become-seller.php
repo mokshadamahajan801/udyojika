@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Udyojika - Seller Application
  */
