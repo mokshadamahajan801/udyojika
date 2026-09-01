@@ -18,9 +18,76 @@ $error_message = '';
 
 /*
 |--------------------------------------------------------------------------
+| Check Login
+|--------------------------------------------------------------------------
+| A seller application must belong to an existing user.
+|--------------------------------------------------------------------------
+*/
+
+if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+
+    header('Location: login.php?msg=auth_required');
+    exit;
+}
+
+$current_user_id = (int) $_SESSION['user_id'];
+
+
+/*
+|--------------------------------------------------------------------------
+| Get Current User
+|--------------------------------------------------------------------------
+*/
+
+$user_stmt = $pdo->prepare("
+    SELECT id, name, email, role
+    FROM users
+    WHERE id = ?
+    LIMIT 1
+");
+
+$user_stmt->execute([$current_user_id]);
+
+$current_user = $user_stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$current_user) {
+
+    unset(
+        $_SESSION['user'],
+        $_SESSION['user_id'],
+        $_SESSION['user_role']
+    );
+
+    header('Location: login.php?msg=auth_required');
+    exit;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Prevent Admin / Existing Seller From Applying Again
+|--------------------------------------------------------------------------
+*/
+
+if ($current_user['role'] === 'seller') {
+
+    header('Location: seller/index.php');
+    exit;
+}
+
+if ($current_user['role'] === 'admin') {
+
+    header('Location: admin/index.php');
+    exit;
+}
+
+
+/*
+|--------------------------------------------------------------------------
 | Seller Application Processing
 |--------------------------------------------------------------------------
 */
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     /*
@@ -28,6 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     | Get Form Data
     |--------------------------------------------------------------------------
     */
+
     $full_name = trim($_POST['full_name'] ?? '');
     $business_name = trim($_POST['business_name'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
@@ -35,11 +103,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $category = trim($_POST['category'] ?? '');
     $description = trim($_POST['description'] ?? '');
 
+
     /*
     |--------------------------------------------------------------------------
     | Validate Required Fields
     |--------------------------------------------------------------------------
     */
+
     if (
         $full_name === '' ||
         $business_name === '' ||
@@ -50,63 +120,123 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ) {
 
         $error_message = 'Please fill in all required fields.';
+
     } elseif (mb_strlen($full_name) < 2) {
 
         $error_message = 'Please enter a valid full name.';
+
     } elseif (mb_strlen($business_name) < 2) {
 
         $error_message = 'Please enter a valid business name.';
+
     } elseif (!preg_match('/^[0-9+\-\s]{10,15}$/', $phone)) {
 
         $error_message = 'Please enter a valid WhatsApp number.';
+
     } elseif (mb_strlen($description) < 10) {
 
         $error_message = 'Please provide a little more information about your products.';
+
     } else {
 
         try {
 
             /*
             |--------------------------------------------------------------------------
-            | Check Existing Seller Application
+            | Check Existing Application For This User
             |--------------------------------------------------------------------------
             */
+
             $check_stmt = $pdo->prepare("
-                SELECT id
+                SELECT id, status
                 FROM sellers
-                WHERE business_name = ?
-                AND owner_name = ?
+                WHERE user_id = ?
                 LIMIT 1
             ");
 
-            $check_stmt->execute([
-                $business_name,
-                $full_name
-            ]);
+            $check_stmt->execute([$current_user_id]);
 
             $existing_seller = $check_stmt->fetch(PDO::FETCH_ASSOC);
 
+
             if ($existing_seller) {
 
-                $error_message =
-                    'A seller application with this business name and owner name already exists.';
+                if ($existing_seller['status'] === 'pending') {
+
+                    $error_message =
+                        'Your seller application is already pending approval. Please wait for the administrator to review it.';
+
+                } elseif ($existing_seller['status'] === 'approved') {
+
+                    $error_message =
+                        'Your seller application has already been approved. Please sign in again to access your seller dashboard.';
+
+                } elseif ($existing_seller['status'] === 'rejected') {
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Allow Re-application After Rejection
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $stmt = $pdo->prepare("
+                        UPDATE sellers
+                        SET
+                            business_name = ?,
+                            owner_name = ?,
+                            location = ?,
+                            status = 'pending',
+                            created_at = NOW()
+                        WHERE id = ?
+                    ");
+
+                    $stmt->execute([
+                        $business_name,
+                        $full_name,
+                        $city,
+                        $existing_seller['id']
+                    ]);
+
+                    $success_message =
+                        "Thank you, " .
+                        htmlspecialchars($full_name, ENT_QUOTES, 'UTF-8') .
+                        "! Your seller application has been resubmitted and is now pending admin approval.";
+
+                    $full_name = '';
+                    $business_name = '';
+                    $phone = '';
+                    $city = '';
+                    $category = '';
+                    $description = '';
+                }
+
             } else {
 
                 /*
                 |--------------------------------------------------------------------------
-                | Insert Seller Application
+                | Create New Seller Application
+                |--------------------------------------------------------------------------
+                |
+                | IMPORTANT:
+                | The user's role is NOT changed here.
+                | It remains "customer" until admin approval.
                 |--------------------------------------------------------------------------
                 */
+
                 $stmt = $pdo->prepare("
                     INSERT INTO sellers
                     (
+                        user_id,
                         business_name,
                         owner_name,
+                        location,
                         status,
                         created_at
                     )
                     VALUES
                     (
+                        ?,
+                        ?,
                         ?,
                         ?,
                         'pending',
@@ -115,27 +245,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ");
 
                 $stmt->execute([
+                    $current_user_id,
                     $business_name,
-                    $full_name
+                    $full_name,
+                    $city
                 ]);
+
 
                 /*
                 |--------------------------------------------------------------------------
                 | Success Message
                 |--------------------------------------------------------------------------
                 */
+
                 $success_message =
                     "Thank you, " .
                     htmlspecialchars($full_name, ENT_QUOTES, 'UTF-8') .
                     "! Your application for '" .
                     htmlspecialchars($business_name, ENT_QUOTES, 'UTF-8') .
-                    "' has been received. Our Women Entrepreneurship cell will contact you within 24 hours.";
+                    "' has been received. Our Women Entrepreneurship cell will review your application.";
 
                 /*
                 |--------------------------------------------------------------------------
                 | Clear Submitted Form Values
                 |--------------------------------------------------------------------------
                 */
+
                 $full_name = '';
                 $business_name = '';
                 $phone = '';
@@ -143,6 +278,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $category = '';
                 $description = '';
             }
+
         } catch (PDOException $e) {
 
             /*
@@ -150,6 +286,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             | Database Error
             |--------------------------------------------------------------------------
             */
+
             $error_message =
                 'We could not submit your application right now. Please try again later.';
         }
