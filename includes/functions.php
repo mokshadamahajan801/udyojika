@@ -728,3 +728,26 @@ function get_all_reviews()
         return [];
     }
 }
+
+function get_all_users() {
+    global $pdo;
+
+    $stmt = $pdo->query("
+        SELECT 
+            u.id,
+            u.name,
+            u.email,
+            u.phone,
+            u.role,
+            u.status,
+            u.avatar,
+            u.created_at,
+            b.business_name
+        FROM users u
+        LEFT JOIN sellers s ON u.id = s.user_id
+        LEFT JOIN businesses b ON s.business_id = b.id
+        ORDER BY u.created_at DESC
+    ");
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}

@@ -3,6 +3,7 @@ $page_title = "Manage Users - Admin Portal";
 $page_header = "User & Account Directory";
 $page_subheader = "View, filter and manage all admins, women sellers and customer accounts";
 require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/../includes/functions.php';
 
 $users = get_all_users();
 $filter_role = $_GET['role'] ?? 'all';
@@ -28,8 +29,21 @@ $filter_role = $_GET['role'] ?? 'all';
 
 <div class="dashboard-card">
     <div class="dashboard-card-header">
-        <h5 class="dashboard-card-title"><i class="fa-solid fa-users text-maroon-800"></i> Registered Platform Accounts</h5>
-        <button class="btn btn-maroon btn-sm" onclick="alert('User export initiated in CSV format.');"><i class="fa-solid fa-download me-1"></i> Export Users</button>
+        <h5 class="dashboard-card-title">
+            <i class="fa-solid fa-users text-maroon-800"></i>
+            Registered Platform Accounts
+        </h5>
+
+        <div class="d-flex gap-2">
+            <a href="add-admin.php" class="btn btn-maroon btn-sm">
+                <i class="fa-solid fa-user-plus me-1"></i> Add Admin
+            </a>
+
+            <button class="btn btn-maroon btn-sm"
+                onclick="alert('User export initiated in CSV format.');">
+                <i class="fa-solid fa-download me-1"></i> Export Users
+            </button>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="dashboard-table">
@@ -46,7 +60,7 @@ $filter_role = $_GET['role'] ?? 'all';
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($users as $u): 
+                <?php foreach ($users as $u):
                     if ($filter_role !== 'all' && $u['role'] !== $filter_role) continue;
                 ?>
                     <tr>
