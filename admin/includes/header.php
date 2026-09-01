@@ -1,6 +1,16 @@
 <?php
 require_once __DIR__ . '/auth.php';
 $site_title = $page_title ?? 'Admin Control Center - Udyojika';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+require_once __DIR__ . '/../../includes/db.php';
+require_once __DIR__ . '/../../includes/functions.php';
+
+$current_user = get_logged_in_user();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -1,15 +1,22 @@
 <?php
+
+require_once __DIR__ . '/includes/auth.php';
+
+require_admin();
+
 $page_title = "Admin Dashboard - Udyojika";
 $page_header = "Executive Marketplace Overview";
 $page_subheader = "Real-time statistics across all sellers, buyers, products and revenue";
+
 require_once __DIR__ . '/includes/header.php';
 
 $stats = get_admin_dashboard_stats();
 $orders = get_all_orders();
 $seller_requests = get_seller_requests();
-$products = get_all_products();
+$products = get_all_products($pdo);
 $reviews = get_all_reviews();
-$categories = get_categories();
+$categories = get_categories($pdo);
+
 ?>
 
 <!-- Top 12 Summary Metrics Grid -->

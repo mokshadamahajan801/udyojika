@@ -547,3 +547,184 @@ function get_seller_by_id($user_id, PDO $pdo)
 
     return $seller ?: null;
 }
+
+function get_admin_dashboard_stats()
+{
+    global $pdo;
+
+    $stats = [
+        'total_users'       => 0,
+        'total_customers'   => 0,
+        'total_sellers'     => 0,
+        'pending_requests'  => 0,
+        'total_businesses'  => 0,
+        'total_products'    => 0,
+        'total_orders'      => 0,
+        'pending_orders'    => 0,
+        'completed_orders'  => 0,
+        'total_sales'       => 0,
+        'total_reviews'     => 0,
+        'total_enquiries'   => 0
+    ];
+
+    /* Total Users */
+    $stmt = $pdo->query("
+        SELECT COUNT(*)
+        FROM users
+    ");
+    $stats['total_users'] = (int) $stmt->fetchColumn();
+
+
+    /* Total Customers */
+    $stmt = $pdo->query("
+        SELECT COUNT(*)
+        FROM users
+        WHERE role = 'customer'
+    ");
+    $stats['total_customers'] = (int) $stmt->fetchColumn();
+
+
+    /* Total Sellers */
+    $stmt = $pdo->query("
+        SELECT COUNT(*)
+        FROM users
+        WHERE role = 'seller'
+    ");
+    $stats['total_sellers'] = (int) $stmt->fetchColumn();
+
+
+    /* Pending Seller / Maker Requests */
+    $stmt = $pdo->query("
+        SELECT COUNT(*)
+        FROM seller_requests
+        WHERE status = 'pending'
+    ");
+    $stats['pending_requests'] = (int) $stmt->fetchColumn();
+
+
+    /* Total Home Brands / Businesses */
+    $stmt = $pdo->query("
+        SELECT COUNT(*)
+        FROM sellers
+    ");
+    $stats['total_businesses'] = (int) $stmt->fetchColumn();
+
+
+    /* Total Products */
+    $stmt = $pdo->query("
+        SELECT COUNT(*)
+        FROM products
+    ");
+    $stats['total_products'] = (int) $stmt->fetchColumn();
+
+
+    /* Total Orders */
+    $stmt = $pdo->query("
+        SELECT COUNT(*)
+        FROM orders
+    ");
+    $stats['total_orders'] = (int) $stmt->fetchColumn();
+
+
+    /* Pending Orders */
+    $stmt = $pdo->query("
+        SELECT COUNT(*)
+        FROM orders
+        WHERE order_status = 'pending'
+    ");
+    $stats['pending_orders'] = (int) $stmt->fetchColumn();
+
+
+    /* Completed / Delivered Orders */
+    $stmt = $pdo->query("
+        SELECT COUNT(*)
+        FROM orders
+        WHERE order_status IN ('completed', 'delivered')
+    ");
+    $stats['completed_orders'] = (int) $stmt->fetchColumn();
+
+
+    /* Total Sales / GMV */
+    $stmt = $pdo->query("
+        SELECT COALESCE(SUM(total_amount), 0)
+        FROM orders
+        WHERE order_status IN ('completed', 'delivered')
+    ");
+    $stats['total_sales'] = (float) $stmt->fetchColumn();
+
+
+    /* Total Reviews */
+    $stmt = $pdo->query("
+        SELECT COUNT(*)
+        FROM reviews
+    ");
+    $stats['total_reviews'] = (int) $stmt->fetchColumn();
+
+
+    /* Total Enquiries */
+    $stmt = $pdo->query("
+        SELECT COUNT(*)
+        FROM enquiries
+    ");
+    $stats['total_enquiries'] = (int) $stmt->fetchColumn();
+
+
+    return $stats;
+}
+
+function get_all_orders()
+{
+    global $pdo;
+
+    $stmt = $pdo->query("
+        SELECT *
+        FROM orders
+        ORDER BY id DESC
+    ");
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function get_seller_requests()
+{
+    global $pdo;
+
+    try {
+        $stmt = $pdo->query("
+            SELECT *
+            FROM seller_requests
+            WHERE status = 'pending'
+            ORDER BY id DESC
+        ");
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    } catch (PDOException $e) {
+        error_log("Seller Requests Error: " . $e->getMessage());
+        return [];
+    }
+}
+
+function get_all_reviews()
+{
+    global $pdo;
+
+    try {
+        $stmt = $pdo->query("
+            SELECT 
+                r.*,
+                u.name AS customer_name,
+                p.name AS product_name
+            FROM reviews r
+            LEFT JOIN users u ON r.user_id = u.id
+            LEFT JOIN products p ON r.product_id = p.id
+            ORDER BY r.id DESC
+        ");
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    } catch (PDOException $e) {
+        error_log("Reviews Error: " . $e->getMessage());
+        return [];
+    }
+}
