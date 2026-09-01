@@ -217,6 +217,7 @@ function login_user($email, $password, $remember_me = false)
     */
     $_SESSION['user_id'] = (int) $user['id'];
     $_SESSION['user_role'] = $user['role'];
+    $_SESSION['user'] = $user;
 
     /*
     |--------------------------------------------------------------------------
@@ -530,20 +531,22 @@ function get_product_by_slug($slug, PDO $pdo)
     return $product;
 }
 
-function get_seller_by_id($seller_id, PDO $pdo)
+function get_seller_by_id($user_id, PDO $pdo)
 {
     $stmt = $pdo->prepare("
         SELECT *
         FROM sellers
-        WHERE id = ?
+        WHERE user_id = ?
+        AND status = 'approved'
         LIMIT 1
     ");
 
-    $stmt->execute([$seller_id]);
+    $stmt->execute([$user_id]);
 
     $seller = $stmt->fetch(PDO::FETCH_ASSOC);
 
     return $seller ?: null;
+
 }
 
 /**

@@ -1,5 +1,4 @@
 <?php
-
 $page_title = "Homemade with Love | Empowering Women Home Entrepreneurs";
 
 require_once __DIR__ . '/includes/header.php';
