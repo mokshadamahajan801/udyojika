@@ -4,7 +4,8 @@ $page_header = "Customer & Custom Maker Enquiries";
 $page_subheader = "View inquiries sent by customers to individual women makers or corporate bulk inquiries";
 require_once __DIR__ . '/includes/header.php';
 
-$enquiries = get_all_enquiries();
+$enquiries = get_all_enquiries($pdo);
+
 ?>
 
 <div class="dashboard-card">

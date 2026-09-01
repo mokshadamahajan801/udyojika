@@ -84,7 +84,6 @@ function get_all_products(PDO $pdo)
             } else {
                 $product['images'] = [$raw_images];
             }
-
         } else {
             $product['images'] = [];
         }
@@ -153,9 +152,8 @@ function get_sellers(PDO $pdo)
 {
     $sql = "
         SELECT *
-        FROM sellers
-        WHERE status = 'active'
-        ORDER BY created_at DESC
+FROM sellers
+ORDER BY id DESC
     ";
 
     $stmt = $pdo->prepare($sql);
@@ -546,7 +544,6 @@ function get_seller_by_id($user_id, PDO $pdo)
     $seller = $stmt->fetch(PDO::FETCH_ASSOC);
 
     return $seller ?: null;
-
 }
 
 /**
@@ -759,19 +756,6 @@ function get_admin_dashboard_stats()
     return $stats;
 }
 
-function get_all_orders()
-{
-    global $pdo;
-
-    $stmt = $pdo->query("
-        SELECT *
-        FROM orders
-        ORDER BY id DESC
-    ");
-
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
 function get_seller_requests()
 {
     global $pdo;
@@ -785,7 +769,6 @@ function get_seller_requests()
         ");
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
     } catch (PDOException $e) {
         error_log("Seller Requests Error: " . $e->getMessage());
         return [];
@@ -809,14 +792,14 @@ function get_all_reviews()
         ");
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
     } catch (PDOException $e) {
         error_log("Reviews Error: " . $e->getMessage());
         return [];
     }
 }
 
-function get_all_users() {
+function get_all_users()
+{
     global $pdo;
 
     $stmt = $pdo->query("
@@ -832,6 +815,19 @@ function get_all_users() {
         FROM users
         ORDER BY created_at DESC
     ");
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function get_all_enquiries(PDO $pdo)
+{
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM enquiries
+        ORDER BY created_at DESC
+    ");
+
+    $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }

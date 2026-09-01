@@ -1,93 +1,311 @@
 <?php
-$page_title = "Manage Products - Admin Portal";
-$page_header = "Marketplace Products Catalog";
-$page_subheader = "Approve, moderate, edit prices or toggle featured homemade products";
+
+require_once __DIR__ . '/includes/auth.php';
+require_admin();
+
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+$products = get_all_products($pdo);
+
+$page_title = "Products - Admin Portal";
+$page_header = "Products";
+$page_subheader = "View all products listed by sellers";
+
 require_once __DIR__ . '/includes/header.php';
 
-$products = get_all_products();
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div class="d-flex align-items-center gap-2">
-        <span class="badge bg-cream-200 text-maroon-900 border px-3 py-2">
-            Total Live Products: <strong><?php echo count($products); ?></strong>
-        </span>
-    </div>
+<!-- Search & Count -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
+    <span class="badge bg-cream-200 text-maroon-900 border px-3 py-2">
+        Total Products:
+        <strong><?php echo count($products); ?></strong>
+    </span>
+
     <div class="input-group input-group-sm" style="max-width: 300px;">
-        <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-        <input type="text" id="dashboardTableSearch" class="form-control" placeholder="Search product or maker...">
+        <span class="input-group-text bg-white">
+            <i class="fa-solid fa-magnifying-glass text-muted"></i>
+        </span>
+
+        <input
+            type="text"
+            id="dashboardTableSearch"
+            class="form-control"
+            placeholder="Search product or maker...">
     </div>
+
 </div>
 
+
+<!-- Products Card -->
 <div class="dashboard-card">
+
     <div class="dashboard-card-header">
-        <h5 class="dashboard-card-title"><i class="fa-solid fa-box-open text-maroon-800"></i> All Homemade Products</h5>
+
+        <h5 class="dashboard-card-title">
+            <i class="fa-solid fa-box-open text-maroon-800"></i>
+            All Products
+        </h5>
+
     </div>
+
+
     <div class="table-responsive">
+
         <table class="dashboard-table">
+
             <thead>
                 <tr>
-                    <th>Product & Image</th>
+                    <th>Product</th>
                     <th>Category</th>
                     <th>Seller / Maker</th>
                     <th>Price</th>
                     <th>Stock</th>
                     <th>Rating</th>
-                    <th>Featured</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th>Action</th>
                 </tr>
             </thead>
+
+
             <tbody>
-                <?php foreach ($products as $p): ?>
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <img src="<?php echo $p['images'][0]; ?>" class="rounded-3 border" style="width: 44px; height: 44px; object-fit: cover;" alt="">
-                                <div>
-                                    <strong class="text-dark d-block"><?php echo htmlspecialchars($p['name']); ?></strong>
-                                    <small class="text-muted"><?php echo htmlspecialchars($p['unit']); ?></small>
+
+                <?php if (!empty($products)): ?>
+
+                    <?php foreach ($products as $p): ?>
+
+                        <tr>
+
+                            <!-- Product -->
+                            <td>
+
+                                <div class="d-flex align-items-center gap-2">
+
+                                    <?php
+                                    $product_image = 'https://via.placeholder.com/60';
+
+                                    if (!empty($p['images']) && is_array($p['images'])) {
+                                        $product_image = $p['images'][0];
+                                    }
+                                    ?>
+
+                                    <img
+                                        src="<?php echo htmlspecialchars($product_image); ?>"
+                                        class="rounded-3 border"
+                                        style="width:44px;height:44px;object-fit:cover;"
+                                        alt="Product">
+
+                                    <div>
+
+                                        <strong class="text-dark d-block">
+                                            <?php
+                                            echo htmlspecialchars(
+                                                $p['name'] ?? 'Unnamed Product'
+                                            );
+                                            ?>
+                                        </strong>
+
+                                        <?php if (!empty($p['unit'])): ?>
+
+                                            <small class="text-muted">
+                                                <?php echo htmlspecialchars($p['unit']); ?>
+                                            </small>
+
+                                        <?php endif; ?>
+
+                                    </div>
+
                                 </div>
+
+                            </td>
+
+
+                            <!-- Category -->
+                            <td>
+
+                                <span class="badge bg-light text-dark border">
+
+                                    <?php
+                                    echo htmlspecialchars(
+                                        $p['category'] ?? 'N/A'
+                                    );
+                                    ?>
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- Seller -->
+                            <td>
+
+                                <strong class="text-maroon-900">
+
+                                    <?php
+                                    echo htmlspecialchars(
+                                        $p['seller_name'] ?? 'Unknown Seller'
+                                    );
+                                    ?>
+
+                                </strong>
+
+                                <?php if (!empty($p['seller_location'])): ?>
+
+                                    <small class="text-muted d-block">
+
+                                        <?php
+                                        echo htmlspecialchars(
+                                            $p['seller_location']
+                                        );
+                                        ?>
+
+                                    </small>
+
+                                <?php endif; ?>
+
+                            </td>
+
+
+                            <!-- Price -->
+                            <td>
+
+                                <strong class="text-maroon-800">
+
+                                    ₹<?php
+                                        echo number_format(
+                                            (float) ($p['price'] ?? 0),
+                                            2
+                                        );
+                                        ?>
+
+                                </strong>
+
+                            </td>
+
+
+                            <!-- Stock -->
+                            <td>
+
+                                <span class="badge bg-light text-dark border">
+
+                                    <?php
+                                    echo (int) ($p['stock_quantity'] ?? 0);
+                                    ?>
+
+                                    in stock
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- Rating -->
+                            <td>
+
+                                <span class="text-warning small fw-bold">
+
+                                    <i class="fa-solid fa-star"></i>
+
+                                    <?php
+                                    echo number_format(
+                                        (float) ($p['rating'] ?? 0),
+                                        1
+                                    );
+                                    ?>
+
+                                </span>
+
+                                <small class="text-muted">
+
+                                    (<?php
+                                        echo (int) ($p['review_count'] ?? 0);
+                                        ?>)
+
+                                </small>
+
+                            </td>
+
+
+                            <!-- Status -->
+                            <td>
+
+                                <?php
+                                $product_status = strtolower(
+                                    $p['status'] ?? 'active'
+                                );
+                                ?>
+
+                                <span class="badge-status-<?php
+                                                            echo htmlspecialchars($product_status);
+                                                            ?>">
+
+                                    <?php
+                                    echo ucfirst($product_status);
+                                    ?>
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- View Only -->
+                            <td>
+
+                                <?php if (!empty($p['slug'])): ?>
+
+                                    <a href="product-view.php?id=<?php echo $p['id']; ?>"
+                                        class="btn btn-light border"
+                                        title="View Product">
+                                        <i class="fa-regular fa-eye"></i>
+                                    </a>
+                                    
+                                <?php else: ?>
+
+                                    <span class="text-muted small">
+                                        No page
+                                    </span>
+
+                                <?php endif; ?>
+
+                            </td>
+
+                        </tr>
+
+                    <?php endforeach; ?>
+
+                <?php else: ?>
+
+                    <tr>
+
+                        <td colspan="8" class="text-center py-5">
+
+                            <div class="text-muted">
+
+                                <i class="fa-solid fa-box-open fs-1 mb-3"></i>
+
+                                <h6>No Products Found</h6>
+
+                                <p class="small mb-0">
+                                    No products have been added by sellers yet.
+                                </p>
+
                             </div>
+
                         </td>
-                        <td><span class="badge bg-light text-dark border"><?php echo htmlspecialchars($p['category']); ?></span></td>
-                        <td>
-                            <strong class="text-maroon-900"><?php echo htmlspecialchars($p['seller_name']); ?></strong>
-                            <small class="text-muted d-block"><?php echo htmlspecialchars($p['seller_location']); ?></small>
-                        </td>
-                        <td>
-                            <strong class="text-maroon-800">₹<?php echo $p['price']; ?></strong>
-                            <?php if (!empty($p['original_price'])): ?>
-                                <small class="text-muted text-decoration-line-through d-block">₹<?php echo $p['original_price']; ?></small>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <span class="badge bg-light text-dark border"><?php echo $p['stock_quantity']; ?> in stock</span>
-                        </td>
-                        <td>
-                            <span class="text-warning small fw-bold"><i class="fa-solid fa-star"></i> <?php echo $p['rating']; ?></span>
-                            <small class="text-muted">(<?php echo $p['review_count']; ?>)</small>
-                        </td>
-                        <td>
-                            <?php if ($p['is_featured']): ?>
-                                <span class="badge bg-warning text-dark"><i class="fa-solid fa-star me-1"></i> Featured</span>
-                            <?php else: ?>
-                                <span class="text-muted small">Standard</span>
-                            <?php endif; ?>
-                        </td>
-                        <td><span class="badge-status-active">Active</span></td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <a href="../product-details.php?slug=<?php echo $p['slug']; ?>" target="_blank" class="btn btn-light border" title="View Public Page"><i class="fa-regular fa-eye"></i></a>
-                                <button class="btn btn-light border" title="Edit Product" onclick="alert('Edit Product #<?php echo $p['id']; ?>');"><i class="fa-solid fa-pen"></i></button>
-                                <button class="btn btn-light border text-danger" title="Delete/Hide Product" onclick="if(confirm('Hide product from marketplace?')) alert('Product status updated.');"><i class="fa-solid fa-trash-can"></i></button>
-                            </div>
-                        </td>
+
                     </tr>
-                <?php endforeach; ?>
+
+                <?php endif; ?>
+
             </tbody>
+
         </table>
+
     </div>
+
 </div>
+
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

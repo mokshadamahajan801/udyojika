@@ -11,7 +11,7 @@ $page_subheader = "Real-time statistics across all sellers, buyers, products and
 require_once __DIR__ . '/includes/header.php';
 
 $stats = get_admin_dashboard_stats();
-$orders = get_all_orders();
+$orders = get_all_orders($pdo);
 $seller_requests = get_seller_requests();
 $products = get_all_products($pdo);
 $reviews = get_all_reviews();

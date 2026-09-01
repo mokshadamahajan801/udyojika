@@ -4,7 +4,13 @@ $page_header = "Active Women Sellers & Makers";
 $page_subheader = "Manage verified maker profiles, ratings, badges and active storefront status";
 require_once __DIR__ . '/includes/header.php';
 
-$sellers = get_sellers();
+require_once __DIR__ . '/includes/auth.php';
+require_admin();
+
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+$sellers = get_sellers($pdo);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -64,12 +70,21 @@ $sellers = get_sellers();
                         </td>
                         <td><span class="badge-status-active">Active</span></td>
                         <td>
-                            <div class="btn-group btn-group-sm">
-                                <a href="../business-details.php?id=<?php echo $s['id']; ?>" target="_blank" class="btn btn-light border" title="View Storefront"><i class="fa-regular fa-eye"></i></a>
-                                <button class="btn btn-light border" title="Edit Seller Details" onclick="alert('Edit Maker: <?php echo htmlspecialchars($s['owner_name']); ?>');"><i class="fa-solid fa-pen"></i></button>
-                                <button class="btn btn-light border text-danger" title="Suspend Maker" onclick="if(confirm('Suspend <?php echo htmlspecialchars($s['business_name']); ?>?')) alert('Maker suspended.');"><i class="fa-solid fa-ban"></i></button>
-                            </div>
-                        </td>
+    <div class="btn-group btn-group-sm">
+
+        <!-- VIEW SELLER -->
+        <a
+            href="seller-view.php?id=<?php echo (int)$s['id']; ?>"
+            class="btn btn-light border"
+            title="View Seller"
+        >
+            <i class="fa-regular fa-eye"></i>
+        </a>
+
+
+
+    </div>
+</td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

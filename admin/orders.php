@@ -4,7 +4,8 @@ $page_header = "Marketplace Orders & Deliveries";
 $page_subheader = "Monitor customer orders, payment receipts and maker dispatch milestones";
 require_once __DIR__ . '/includes/header.php';
 
-$orders = get_all_orders();
+$orders = get_all_orders($pdo);
+
 $filter_status = $_GET['status'] ?? 'all';
 $action_msg = '';
 

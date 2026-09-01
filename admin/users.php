@@ -100,28 +100,11 @@ require_once __DIR__ . '/includes/header.php';
                         </td>
                         <td class="small text-muted"><?php echo date('d M, Y', strtotime($u['created_at'])); ?></td>
                         <td>
-                            <div class="btn-group btn-group-sm">
-                                <a
-                                    href="user-view.php?id=<?php echo $u['id']; ?>"
-                                    class="btn btn-light border"
-                                    title="View User">
-                                    <i class="fa-solid fa-eye"></i>
-                                </a>
-                                <a
-                                    href="user-edit.php?id=<?php echo $u['id']; ?>"
-                                    class="btn btn-light border"
-                                    title="Edit User">
-                                    <i class="fa-solid fa-pen"></i>
-                                </a>
-                                <?php if ($u['role'] !== 'admin'): ?>
-                                    <a href="user-suspend.php?id=<?php echo $u['id']; ?>"
-                                        class="btn btn-light border text-danger"
-                                        title="<?php echo $u['status'] === 'active' ? 'Suspend User' : 'Activate User'; ?>"
-                                        onclick="return confirm('<?php echo $u['status'] === 'active' ? 'Suspend' : 'Activate'; ?> account for <?php echo htmlspecialchars($u['name']); ?>?');">
-                                        <i class="fa-solid <?php echo $u['status'] === 'active' ? 'fa-ban' : 'fa-check'; ?>"></i>
-                                    </a>
-                                <?php endif; ?>
-                            </div>
+                            <a href="user-view.php?id=<?php echo $u['id']; ?>"
+                                class="btn btn-light border"
+                                title="View User">
+                                <i class="fa-regular fa-eye"></i>
+                            </a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
