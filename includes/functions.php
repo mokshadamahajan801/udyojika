@@ -547,3 +547,85 @@ function get_seller_by_id($user_id, PDO $pdo)
 
     return $seller ?: null;
 }
+
+function get_admin_dashboard_stats()
+{
+    global $pdo;
+
+    $stats = [
+        'total_users' => 0,
+        'total_sellers' => 0,
+        'total_customers' => 0,
+        'total_products' => 0,
+        'total_orders' => 0,
+        'total_reviews' => 0,
+        'total_enquiries' => 0,
+        'total_messages' => 0
+    ];
+
+    try {
+
+        // Total Users
+        $stmt = $pdo->query("SELECT COUNT(*) FROM users");
+        $stats['total_users'] = (int) $stmt->fetchColumn();
+
+        // Sellers
+        $stmt = $pdo->query("
+            SELECT COUNT(*)
+            FROM users
+            WHERE role = 'seller'
+        ");
+        $stats['total_sellers'] = (int) $stmt->fetchColumn();
+
+        // Customers
+        $stmt = $pdo->query("
+            SELECT COUNT(*)
+            FROM users
+            WHERE role = 'customer'
+        ");
+        $stats['total_customers'] = (int) $stmt->fetchColumn();
+
+        // Products
+        $stmt = $pdo->query("SELECT COUNT(*) FROM products");
+        $stats['total_products'] = (int) $stmt->fetchColumn();
+
+        // Orders
+        $stmt = $pdo->query("SELECT COUNT(*) FROM orders");
+        $stats['total_orders'] = (int) $stmt->fetchColumn();
+
+        // Reviews
+        $stmt = $pdo->query("SELECT COUNT(*) FROM reviews");
+        $stats['total_reviews'] = (int) $stmt->fetchColumn();
+
+        // Enquiries
+        $stmt = $pdo->query("SELECT COUNT(*) FROM enquiries");
+        $stats['total_enquiries'] = (int) $stmt->fetchColumn();
+
+        // Contact Messages
+        $stmt = $pdo->query("SELECT COUNT(*) FROM contact_messages");
+        $stats['total_messages'] = (int) $stmt->fetchColumn();
+
+    } catch (PDOException $e) {
+
+        // Keep dashboard from crashing
+        error_log(
+            "Admin Dashboard Stats Error: " .
+            $e->getMessage()
+        );
+    }
+
+    return $stats;
+}
+
+function get_all_orders()
+{
+    global $pdo;
+
+    $stmt = $pdo->query("
+        SELECT *
+        FROM orders
+        ORDER BY id DESC
+    ");
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
