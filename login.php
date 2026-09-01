@@ -86,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             */
             $_SESSION['user_id'] = (int) $user['id'];
             $_SESSION['user_role'] = $user['role'];
+            $_SESSION['user'] = $user;
 
             /*
             |--------------------------------------------------------------------------
@@ -94,26 +95,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             */
             switch ($user['role']) {
 
-    case 'admin':
-        $redirect_url = 'admin/index.php';
-        break;
+                case 'admin':
+                    $redirect_url = 'admin/index.php';
+                    break;
 
-    case 'seller':
-        $redirect_url = 'seller/index.php';
-        break;
+                case 'seller':
+                    $redirect_url = 'seller/index.php';
+                    break;
 
-    case 'customer':
-        $redirect_url = 'customer/index.php';
-        break;
+                case 'customer':
+                    $redirect_url = 'customer/index.php';
+                    break;
 
-    default:
+                default:
+                    unset(
+                        $_SESSION['user'],
+                        $_SESSION['user_id'],
+                        $_SESSION['user_role']
+                    );
 
-        unset($_SESSION['user_id'], $_SESSION['user_role']);
-
-        $error_message =
-            'Your account role is invalid. Please contact the administrator.';
-        break;
-}
+                    $error_message =
+                        'Your account role is invalid. Please contact the administrator.';
+                    break;
+            }
         } else {
 
             /*
@@ -134,127 +138,127 @@ require_once __DIR__ . '/includes/header.php';
 
 <?php if (!empty($redirect_url)): ?>
 
-<!-- Login Success Popup -->
-<div id="loginSuccessPopup" class="login-success-overlay">
+    <!-- Login Success Popup -->
+    <div id="loginSuccessPopup" class="login-success-overlay">
 
-    <div class="login-success-modal">
+        <div class="login-success-modal">
 
-        <div class="login-success-icon">
-            <i class="fa-solid fa-check"></i>
+            <div class="login-success-icon">
+                <i class="fa-solid fa-check"></i>
+            </div>
+
+            <h2>Success!</h2>
+
+            <p>
+                Welcome back to Udyojika!<br>
+                You have successfully logged in.
+            </p>
+
+            <button
+                type="button"
+                class="login-success-btn"
+                onclick="continueAfterLogin()">
+                OK
+            </button>
+
         </div>
-
-        <h2>Success!</h2>
-
-        <p>
-            Welcome back to Udyojika!<br>
-            You have successfully logged in.
-        </p>
-
-        <button
-            type="button"
-            class="login-success-btn"
-            onclick="continueAfterLogin()">
-            OK
-        </button>
 
     </div>
 
-</div>
+    <style>
+        .login-success-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            padding: 20px;
+        }
 
-<style>
-.login-success-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 99999;
-    padding: 20px;
-}
+        .login-success-modal {
+            width: 100%;
+            max-width: 430px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 65px 35px 35px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+            animation: loginPopup 0.25s ease-out;
+        }
 
-.login-success-modal {
-    width: 100%;
-    max-width: 430px;
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 65px 35px 35px;
-    text-align: center;
-    position: relative;
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
-    animation: loginPopup 0.25s ease-out;
-}
+        .login-success-icon {
+            position: absolute;
+            top: -55px;
+            left: 50%;
+            transform: translateX(-50%);
 
-.login-success-icon {
-    position: absolute;
-    top: -55px;
-    left: 50%;
-    transform: translateX(-50%);
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
 
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
+            background: #72c837;
+            color: white;
 
-    background: #72c837;
-    color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+            font-size: 55px;
+            border: 8px solid rgba(255, 255, 255, 0.95);
+        }
 
-    font-size: 55px;
-    border: 8px solid rgba(255, 255, 255, 0.95);
-}
+        .login-success-modal h2 {
+            margin: 20px 0 15px;
+            font-size: 42px;
+            font-weight: 400;
+            color: #333;
+        }
 
-.login-success-modal h2 {
-    margin: 20px 0 15px;
-    font-size: 42px;
-    font-weight: 400;
-    color: #333;
-}
+        .login-success-modal p {
+            font-size: 18px;
+            line-height: 1.5;
+            color: #555;
+            margin-bottom: 30px;
+        }
 
-.login-success-modal p {
-    font-size: 18px;
-    line-height: 1.5;
-    color: #555;
-    margin-bottom: 30px;
-}
+        .login-success-btn {
+            width: 100%;
+            border: none;
+            border-radius: 4px;
+            background: #72c837;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
 
-.login-success-btn {
-    width: 100%;
-    border: none;
-    border-radius: 4px;
-    background: #72c837;
-    color: white;
-    padding: 15px;
-    font-size: 18px;
-    cursor: pointer;
-    transition: 0.2s ease;
-}
+        .login-success-btn:hover {
+            background: #61b52d;
+        }
 
-.login-success-btn:hover {
-    background: #61b52d;
-}
+        @keyframes loginPopup {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
 
-@keyframes loginPopup {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
 
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-</style>
-
-<script>
-function continueAfterLogin() {
-    window.location.href = <?php echo json_encode($redirect_url); ?>;
-}
-</script>
+    <script>
+        function continueAfterLogin() {
+            window.location.href = <?php echo json_encode($redirect_url); ?>;
+        }
+    </script>
 
 <?php endif; ?>
 

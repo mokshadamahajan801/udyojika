@@ -81,10 +81,10 @@ $sellers = get_sellers($pdo);
             </div>
             <div class="col-lg-6 position-relative">
                 <div class="position-relative p-2">
-                    <img src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=800&auto=format&fit=crop"
+                    <img src="images/img.png"
      alt="Handmade products crafted by women"
      class="img-fluid rounded-4 shadow-lg w-100"
-     style="max-height: 480px; object-fit: cover;">
+     style="height: 500px; object-fit: cover;">
                     
                     <!-- Floating Seller Badge -->
                     <!-- <div class="position-absolute bottom-0 start-0 translate-middle-y bg-white p-3 rounded-4 shadow-lg d-flex align-items-center gap-3 ms-3 mb-2 border border-warning" style="max-width: 280px;">
