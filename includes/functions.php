@@ -629,3 +629,23 @@ function get_all_orders()
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+function get_seller_requests()
+{
+    global $pdo;
+
+    try {
+        $stmt = $pdo->query("
+            SELECT *
+            FROM seller_requests
+            WHERE status = 'pending'
+            ORDER BY id DESC
+        ");
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    } catch (PDOException $e) {
+        error_log("Seller Requests Error: " . $e->getMessage());
+        return [];
+    }
+}
