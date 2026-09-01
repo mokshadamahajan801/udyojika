@@ -1,8 +1,14 @@
 <?php
+
+require_once __DIR__ . '/includes/auth.php';
+
+require_admin();
+
 $page_title = "Admin Dashboard - Udyojika";
 $page_header = "Executive Marketplace Overview";
 $page_subheader = "Real-time statistics across all sellers, buyers, products and revenue";
 require_once __DIR__ . '/includes/header.php';
+
 
 $stats = get_admin_dashboard_stats();
 $orders = get_all_orders();
