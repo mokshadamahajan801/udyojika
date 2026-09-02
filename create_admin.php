@@ -2,26 +2,24 @@
 
 require_once __DIR__ . '/includes/db.php';
 
-$email = 'admin@udyojika.com';
-$new_password = 'Admin@123';
+$email = "admin@udyojika.com";
+$password = "Admin@123";
+$name = "Admin";
+$role = "admin";
 
-$hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+$hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
 $stmt = $pdo->prepare("
-    UPDATE users
-    SET password = ?,
-        role = 'admin',
-        status = 'active'
-    WHERE email = ?
+    INSERT INTO users (name, email, password, role)
+    VALUES (?, ?, ?, ?)
 ");
 
 $stmt->execute([
+    $name,
+    $email,
     $hashed_password,
-    $email
+    $role
 ]);
 
-if ($stmt->rowCount() > 0) {
-    echo "Admin password updated successfully!";
-} else {
-    echo "Admin user found, but no changes were made.";
-}
+echo "Admin created successfully!";
+?>
