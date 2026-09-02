@@ -14,26 +14,15 @@ function get_all_products(PDO $pdo)
     $sql = "
         SELECT
             p.*,
-
-            /* Category information */
             c.slug AS category_slug,
-
-            /* Seller information */
             s.business_name AS seller_name,
             s.owner_name AS seller_owner,
             s.avatar AS seller_avatar,
             s.location AS seller_location
-
         FROM products p
-
-        LEFT JOIN categories c
-            ON p.category_id = c.id
-
-        LEFT JOIN sellers s
-            ON p.seller_id = s.id
-
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN sellers s ON p.seller_id = s.id
         WHERE p.status = 'active'
-
         ORDER BY p.created_at DESC
     ";
 
@@ -43,56 +32,26 @@ function get_all_products(PDO $pdo)
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($products as &$product) {
+        $product['category'] = $product['category_name'] ?? 'Uncategorized';
+        $product['category_slug'] = $product['category_slug'] ?? '';
+        $product['seller_name'] = $product['seller_name'] ?? $product['seller_owner'] ?? 'Unknown Maker';
+        $product['seller_avatar'] = $product['seller_avatar'] ?? '';
+        $product['seller_location'] = $product['seller_location'] ?? 'Location not available';
 
-        // Category
-        $product['category'] =
-            $product['category_name'] ?? 'Uncategorized';
-
-        $product['category_slug'] =
-            $product['category_slug'] ?? '';
-
-
-        // Seller name
-        $product['seller_name'] =
-            $product['seller_name']
-            ?? $product['seller_owner']
-            ?? 'Unknown Maker';
-
-
-        // Seller avatar
-        $product['seller_avatar'] =
-            $product['seller_avatar'] ?? '';
-
-
-        // Seller location
-        $product['seller_location'] =
-            $product['seller_location'] ?? 'Location not available';
-
-
-        // Product images
         $raw_images = $product['images'] ?? null;
 
         if (!empty($raw_images)) {
-
-            $decoded_images = json_decode(
-                $raw_images,
-                true
-            );
-
-            if (is_array($decoded_images)) {
-                $product['images'] = $decoded_images;
-            } else {
-                $product['images'] = [$raw_images];
-            }
+            $decoded_images = json_decode($raw_images, true);
+            $product['images'] = is_array($decoded_images) ? $decoded_images : [$raw_images];
         } else {
             $product['images'] = [];
         }
     }
 
     unset($product);
-
     return $products;
 }
+
 /**
  * Get all active categories
  */
@@ -109,14 +68,7 @@ function get_categories(PDO $pdo)
 
     $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Get Popular Products For Each Category
-    |--------------------------------------------------------------------------
-    */
-
     foreach ($categories as &$category) {
-
         $category['popular_items'] = [];
 
         $productStmt = $pdo->prepare("
@@ -140,10 +92,8 @@ function get_categories(PDO $pdo)
     }
 
     unset($category);
-
     return $categories;
 }
-
 
 /**
  * Get all active sellers
@@ -152,8 +102,8 @@ function get_sellers(PDO $pdo)
 {
     $sql = "
         SELECT *
-FROM sellers
-ORDER BY id DESC
+        FROM sellers
+        ORDER BY id DESC
     ";
 
     $stmt = $pdo->prepare($sql);
@@ -183,53 +133,27 @@ function login_user($email, $password, $remember_me = false)
     ");
 
     $stmt->execute([$email]);
-
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
         return false;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Verify Password
-    |--------------------------------------------------------------------------
-    */
     if (!password_verify($password, $user['password'])) {
         return false;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Start Session
-    |--------------------------------------------------------------------------
-    */
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Store User Session
-    |--------------------------------------------------------------------------
-    */
     $_SESSION['user_id'] = (int) $user['id'];
     $_SESSION['user_role'] = $user['role'];
     $_SESSION['user'] = $user;
 
-    /*
-    |--------------------------------------------------------------------------
-    | Remember Me
-    |--------------------------------------------------------------------------
-    */
     if ($remember_me) {
-
         $token = bin2hex(random_bytes(32));
-
-        $expires = date(
-            'Y-m-d H:i:s',
-            time() + (30 * 24 * 60 * 60)
-        );
+        $expires = date('Y-m-d H:i:s', time() + (30 * 24 * 60 * 60));
 
         $stmt = $pdo->prepare("
             UPDATE users
@@ -259,7 +183,6 @@ function login_user($email, $password, $remember_me = false)
     return $user;
 }
 
-
 /**
  * Require user to have one of the allowed roles
  */
@@ -269,26 +192,10 @@ function require_role($roles)
         session_start();
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Check Normal Session
-    |--------------------------------------------------------------------------
-    */
     if (empty($_SESSION['user_id'])) {
-
-        /*
-        |--------------------------------------------------------------------------
-        | Try Remember Me Login
-        |--------------------------------------------------------------------------
-        */
         auto_login_from_cookie();
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | User Still Not Logged In
-    |--------------------------------------------------------------------------
-    */
     if (empty($_SESSION['user_id'])) {
         header("Location: ../login.php?msg=auth_required");
         exit;
@@ -312,7 +219,6 @@ function require_role($roles)
 
     return $current_user;
 }
-
 
 /**
  * Automatically login user using Remember Me cookie
@@ -354,22 +260,10 @@ function auto_login_from_cookie()
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
-
-        setcookie(
-            'udyojika_remember',
-            '',
-            time() - 3600,
-            '/'
-        );
-
+        setcookie('udyojika_remember', '', time() - 3600, '/');
         return false;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Restore Session
-    |--------------------------------------------------------------------------
-    */
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
@@ -379,7 +273,6 @@ function auto_login_from_cookie()
 
     return true;
 }
-
 
 /**
  * Get currently logged-in user
@@ -406,7 +299,6 @@ function get_logged_in_user()
     return $user ?: null;
 }
 
-
 /**
  * Logout current user
  */
@@ -418,13 +310,7 @@ function logout_user()
         session_start();
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Remove Remember Me Token From Database
-    |--------------------------------------------------------------------------
-    */
     if (!empty($_SESSION['user_id'])) {
-
         $stmt = $pdo->prepare("
             UPDATE users
             SET remember_token = NULL,
@@ -432,32 +318,14 @@ function logout_user()
             WHERE id = ?
         ");
 
-        $stmt->execute([
-            $_SESSION['user_id']
-        ]);
+        $stmt->execute([$_SESSION['user_id']]);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Remove Remember Me Cookie
-    |--------------------------------------------------------------------------
-    */
-    setcookie(
-        'udyojika_remember',
-        '',
-        time() - 3600,
-        '/'
-    );
+    setcookie('udyojika_remember', '', time() - 3600, '/');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Destroy Session
-    |--------------------------------------------------------------------------
-    */
     $_SESSION = [];
 
     if (ini_get('session.use_cookies')) {
-
         $params = session_get_cookie_params();
 
         setcookie(
@@ -477,17 +345,17 @@ function logout_user()
 function get_product_by_slug($slug, PDO $pdo)
 {
     $stmt = $pdo->prepare("
-    SELECT 
-        p.*,
-        c.name AS category,
-        c.slug AS category_slug,
-        b.business_name AS seller_name
-    FROM products p
-    LEFT JOIN categories c ON p.category_id = c.id
-    LEFT JOIN sellers b ON p.seller_id = b.id
-    WHERE p.slug = ?
-    LIMIT 1
-");
+        SELECT
+            p.*,
+            c.name AS category,
+            c.slug AS category_slug,
+            b.business_name AS seller_name
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN sellers b ON p.seller_id = b.id
+        WHERE p.slug = ?
+        LIMIT 1
+    ");
 
     $stmt->execute([$slug]);
 
@@ -497,30 +365,20 @@ function get_product_by_slug($slug, PDO $pdo)
         return null;
     }
 
-    // Convert image data into an array
     if (!empty($product['images'])) {
         $decoded = json_decode($product['images'], true);
-
-        if (is_array($decoded)) {
-            $product['images'] = $decoded;
-        } else {
-            $product['images'] = [$product['images']];
-        }
+        $product['images'] = is_array($decoded) ? $decoded : [$product['images']];
     } else {
         $product['images'] = ['assets/images/default-product.jpg'];
     }
 
-    // Convert ingredients into an array
     if (!empty($product['ingredients'])) {
         $decoded = json_decode($product['ingredients'], true);
 
         if (is_array($decoded)) {
             $product['ingredients'] = $decoded;
         } else {
-            $product['ingredients'] = array_map(
-                'trim',
-                explode(',', $product['ingredients'])
-            );
+            $product['ingredients'] = array_map('trim', explode(',', $product['ingredients']));
         }
     } else {
         $product['ingredients'] = [];
@@ -529,13 +387,18 @@ function get_product_by_slug($slug, PDO $pdo)
     return $product;
 }
 
+/**
+ * Get seller by user ID
+ *
+ * sellers.status uses 'active' for an approved/working seller.
+ */
 function get_seller_by_id($user_id, PDO $pdo)
 {
     $stmt = $pdo->prepare("
         SELECT *
         FROM sellers
         WHERE user_id = ?
-        AND status = 'approved'
+        AND status = 'active'
         LIMIT 1
     ");
 
@@ -562,7 +425,6 @@ function get_all_orders(PDO $pdo)
     $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($orders as &$order) {
-
         $itemStmt = $pdo->prepare("
             SELECT *
             FROM order_items
@@ -570,15 +432,12 @@ function get_all_orders(PDO $pdo)
         ");
 
         $itemStmt->execute([$order['id']]);
-
         $order['items'] = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     unset($order);
-
     return $orders;
 }
-
 
 /**
  * Get customer dashboard statistics
@@ -588,7 +447,6 @@ function get_customer_dashboard_stats($customer_id, PDO $pdo)
     $stmt = $pdo->prepare("
         SELECT
             COUNT(*) AS total_orders,
-
             SUM(
                 CASE
                     WHEN order_status IN ('pending', 'processing')
@@ -596,7 +454,6 @@ function get_customer_dashboard_stats($customer_id, PDO $pdo)
                     ELSE 0
                 END
             ) AS pending_orders,
-
             SUM(
                 CASE
                     WHEN order_status = 'completed'
@@ -604,7 +461,6 @@ function get_customer_dashboard_stats($customer_id, PDO $pdo)
                     ELSE 0
                 END
             ) AS completed_orders,
-
             COALESCE(
                 SUM(
                     CASE
@@ -615,13 +471,11 @@ function get_customer_dashboard_stats($customer_id, PDO $pdo)
                 ),
                 0
             ) AS total_spent
-
         FROM orders
         WHERE customer_id = ?
     ");
 
     $stmt->execute([$customer_id]);
-
     $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
     return [
@@ -651,75 +505,30 @@ function get_admin_dashboard_stats()
         'total_enquiries'   => 0
     ];
 
-    /* Total Users */
-    $stmt = $pdo->query("
-        SELECT COUNT(*)
-        FROM users
-    ");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM users");
     $stats['total_users'] = (int) $stmt->fetchColumn();
 
-
-    /* Total Customers */
-    $stmt = $pdo->query("
-        SELECT COUNT(*)
-        FROM users
-        WHERE role = 'customer'
-    ");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'customer'");
     $stats['total_customers'] = (int) $stmt->fetchColumn();
 
-
-    /* Total Sellers */
-    $stmt = $pdo->query("
-        SELECT COUNT(*)
-        FROM users
-        WHERE role = 'seller'
-    ");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'seller'");
     $stats['total_sellers'] = (int) $stmt->fetchColumn();
 
-
-    /* Pending Seller / Maker Requests */
-    $stmt = $pdo->query("
-        SELECT COUNT(*)
-        FROM seller_requests
-        WHERE status = 'pending'
-    ");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM seller_requests WHERE status = 'pending'");
     $stats['pending_requests'] = (int) $stmt->fetchColumn();
 
-
-    /* Total Home Brands / Businesses */
-    $stmt = $pdo->query("
-        SELECT COUNT(*)
-        FROM sellers
-    ");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM sellers");
     $stats['total_businesses'] = (int) $stmt->fetchColumn();
 
-
-    /* Total Products */
-    $stmt = $pdo->query("
-        SELECT COUNT(*)
-        FROM products
-    ");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM products");
     $stats['total_products'] = (int) $stmt->fetchColumn();
 
-
-    /* Total Orders */
-    $stmt = $pdo->query("
-        SELECT COUNT(*)
-        FROM orders
-    ");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM orders");
     $stats['total_orders'] = (int) $stmt->fetchColumn();
 
-
-    /* Pending Orders */
-    $stmt = $pdo->query("
-        SELECT COUNT(*)
-        FROM orders
-        WHERE order_status = 'pending'
-    ");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM orders WHERE order_status = 'pending'");
     $stats['pending_orders'] = (int) $stmt->fetchColumn();
 
-
-    /* Completed / Delivered Orders */
     $stmt = $pdo->query("
         SELECT COUNT(*)
         FROM orders
@@ -727,8 +536,6 @@ function get_admin_dashboard_stats()
     ");
     $stats['completed_orders'] = (int) $stmt->fetchColumn();
 
-
-    /* Total Sales / GMV */
     $stmt = $pdo->query("
         SELECT COALESCE(SUM(total_amount), 0)
         FROM orders
@@ -736,22 +543,11 @@ function get_admin_dashboard_stats()
     ");
     $stats['total_sales'] = (float) $stmt->fetchColumn();
 
-
-    /* Total Reviews */
-    $stmt = $pdo->query("
-        SELECT COUNT(*)
-        FROM reviews
-    ");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM reviews");
     $stats['total_reviews'] = (int) $stmt->fetchColumn();
 
-
-    /* Total Enquiries */
-    $stmt = $pdo->query("
-        SELECT COUNT(*)
-        FROM enquiries
-    ");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM enquiries");
     $stats['total_enquiries'] = (int) $stmt->fetchColumn();
-
 
     return $stats;
 }
@@ -781,7 +577,7 @@ function get_all_reviews()
 
     try {
         $stmt = $pdo->query("
-            SELECT 
+            SELECT
                 r.*,
                 u.name AS customer_name,
                 p.name AS product_name
@@ -803,7 +599,7 @@ function get_all_users()
     global $pdo;
 
     $stmt = $pdo->query("
-        SELECT 
+        SELECT
             id,
             name,
             email,
@@ -830,4 +626,99 @@ function get_all_enquiries(PDO $pdo)
     $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+function get_seller_dashboard_stats($seller_id)
+{
+    global $pdo;
+
+    $stats = [
+        'total_products' => 0,
+        'active_products' => 0,
+        'total_sales' => 0,
+        'pending_orders' => 0,
+        'processing_orders' => 0,
+        'completed_orders' => 0,
+        'average_rating' => 0,
+        'total_reviews' => 0
+    ];
+
+    // Products
+    $stmt = $pdo->prepare("
+        SELECT
+            COUNT(*) AS total_products,
+            SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active_products
+        FROM products
+        WHERE seller_id = ?
+    ");
+    $stmt->execute([$seller_id]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $stats['total_products'] = (int)($row['total_products'] ?? 0);
+    $stats['active_products'] = (int)($row['active_products'] ?? 0);
+
+    // Orders / Sales
+    $stmt = $pdo->prepare("
+        SELECT
+            COALESCE(SUM(
+                CASE
+                    WHEN oi.seller_id = ?
+                    AND o.order_status IN ('completed', 'delivered')
+                    THEN oi.quantity * oi.price
+                    ELSE 0
+                END
+            ), 0) AS total_sales,
+
+            COUNT(DISTINCT CASE
+                WHEN oi.seller_id = ?
+                AND o.order_status = 'pending'
+                THEN o.id
+            END) AS pending_orders,
+
+            COUNT(DISTINCT CASE
+                WHEN oi.seller_id = ?
+                AND o.order_status = 'processing'
+                THEN o.id
+            END) AS processing_orders,
+
+            COUNT(DISTINCT CASE
+                WHEN oi.seller_id = ?
+                AND o.order_status IN ('completed', 'delivered')
+                THEN o.id
+            END) AS completed_orders
+
+        FROM order_items oi
+        INNER JOIN orders o ON o.id = oi.order_id
+    ");
+
+    $stmt->execute([
+        $seller_id,
+        $seller_id,
+        $seller_id,
+        $seller_id
+    ]);
+
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $stats['total_sales'] = (float)($row['total_sales'] ?? 0);
+    $stats['pending_orders'] = (int)($row['pending_orders'] ?? 0);
+    $stats['processing_orders'] = (int)($row['processing_orders'] ?? 0);
+    $stats['completed_orders'] = (int)($row['completed_orders'] ?? 0);
+
+    // Reviews
+    $stmt = $pdo->prepare("
+        SELECT
+            COUNT(*) AS total_reviews,
+            COALESCE(AVG(r.rating), 0) AS average_rating
+        FROM reviews r
+        INNER JOIN products p ON p.id = r.product_id
+        WHERE p.seller_id = ?
+    ");
+
+    $stmt->execute([$seller_id]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $stats['total_reviews'] = (int)($row['total_reviews'] ?? 0);
+    $stats['average_rating'] = round((float)($row['average_rating'] ?? 0), 1);
+
+    return $stats;
 }
