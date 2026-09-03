@@ -9,9 +9,6 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 $page_title = "Sign In";
 
-require_once __DIR__ . '/includes/auth-header.php';
-
-
 /*
 |--------------------------------------------------------------------------
 | If User Is Already Logged In
@@ -20,17 +17,19 @@ require_once __DIR__ . '/includes/auth-header.php';
 
 if (isset($_SESSION['user_id'])) {
 
-    if ($_SESSION['role'] === 'customer') {
+    $role = $_SESSION['role'] ?? '';
+
+    if ($role === 'customer') {
         header("Location: customer/index.php");
         exit;
     }
 
-    if ($_SESSION['role'] === 'seller') {
+    if ($role === 'seller') {
         header("Location: seller/index.php");
         exit;
     }
 
-    if ($_SESSION['role'] === 'admin') {
+    if ($role === 'admin') {
         header("Location: admin/index.php");
         exit;
     }
@@ -150,6 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+require_once __DIR__ . '/includes/auth-header.php';
 
 ?>
 

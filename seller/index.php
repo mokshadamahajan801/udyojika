@@ -17,10 +17,10 @@ require_once __DIR__ . '/includes/auth.php';
 |--------------------------------------------------------------------------
 */
 
-$seller_id = (int)($seller_profile['id'] ?? $current_user['id'] ?? 0);
+$seller_id = (int)($seller_profile['id'] ?? 0);
 
 if ($seller_id <= 0) {
-    die("Seller ID not found.");
+    die("Seller profile not found.");
 }
 
 /*
@@ -47,7 +47,7 @@ require_once __DIR__ . '/includes/header.php';
 
 $stats = get_seller_dashboard_stats($seller_id);
 
-$all_orders = get_all_orders();
+$all_orders = get_all_orders($pdo);
 
 /*
 |--------------------------------------------------------------------------

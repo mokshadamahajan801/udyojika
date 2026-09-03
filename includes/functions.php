@@ -388,9 +388,10 @@ function get_product_by_slug($slug, PDO $pdo)
 }
 
 /**
- * Get seller by user ID
+ * Get seller profile by users.id
  *
- * sellers.status uses 'active' for an approved/working seller.
+ * users.id = sellers.user_id
+ * Approved sellers are allowed to access seller dashboard.
  */
 function get_seller_by_id($user_id, PDO $pdo)
 {
@@ -398,11 +399,11 @@ function get_seller_by_id($user_id, PDO $pdo)
         SELECT *
         FROM sellers
         WHERE user_id = ?
-        AND status = 'active'
+        AND status IN ('approved', 'active')
         LIMIT 1
     ");
 
-    $stmt->execute([$user_id]);
+    $stmt->execute([(int)$user_id]);
 
     $seller = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -627,6 +628,7 @@ function get_all_enquiries(PDO $pdo)
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
 function get_seller_dashboard_stats($seller_id)
 {
     global $pdo;
