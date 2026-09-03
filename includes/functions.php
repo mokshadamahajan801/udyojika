@@ -721,6 +721,7 @@ function get_seller_dashboard_stats($seller_id)
     $stats['average_rating'] = round((float)($row['average_rating'] ?? 0), 1);
 
     return $stats;
+}
 
 /**
  * Get all addresses for a customer
