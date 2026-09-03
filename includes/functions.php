@@ -724,6 +724,7 @@ function get_seller_dashboard_stats($seller_id)
 
     return $stats;
 }
+
 /**
  * Get all addresses for a customer
  */
