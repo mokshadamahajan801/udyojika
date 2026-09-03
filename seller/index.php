@@ -95,7 +95,7 @@ $seller_reviews = array_filter(
 |--------------------------------------------------------------------------
 */
 
-$all_enquiries = get_all_enquiries();
+$all_enquiries = get_all_enquiries($pdo);
 
 $seller_enquiries = array_filter(
     $all_enquiries,
@@ -155,7 +155,7 @@ $seller_enquiries = array_filter(
 
             <div class="stat-trend text-warning">
                 <a href="orders.php"
-                   class="text-decoration-none small text-warning fw-bold">
+                    class="text-decoration-none small text-warning fw-bold">
                     Pack & Dispatch →
                 </a>
             </div>
@@ -248,50 +248,50 @@ $seller_enquiries = array_filter(
 
                     <div class="chart-bar-col">
                         <div class="chart-bar-fill"
-                             style="height: 35%;"
-                             title="Mon: ₹1,200"></div>
+                            style="height: 35%;"
+                            title="Mon: ₹1,200"></div>
                         <span class="chart-bar-label">Mon</span>
                     </div>
 
                     <div class="chart-bar-col">
                         <div class="chart-bar-fill"
-                             style="height: 50%;"
-                             title="Tue: ₹2,400"></div>
+                            style="height: 50%;"
+                            title="Tue: ₹2,400"></div>
                         <span class="chart-bar-label">Tue</span>
                     </div>
 
                     <div class="chart-bar-col">
                         <div class="chart-bar-fill"
-                             style="height: 40%;"
-                             title="Wed: ₹1,800"></div>
+                            style="height: 40%;"
+                            title="Wed: ₹1,800"></div>
                         <span class="chart-bar-label">Wed</span>
                     </div>
 
                     <div class="chart-bar-col">
                         <div class="chart-bar-fill"
-                             style="height: 65%;"
-                             title="Thu: ₹3,200"></div>
+                            style="height: 65%;"
+                            title="Thu: ₹3,200"></div>
                         <span class="chart-bar-label">Thu</span>
                     </div>
 
                     <div class="chart-bar-col">
                         <div class="chart-bar-fill"
-                             style="height: 80%;"
-                             title="Fri: ₹4,100"></div>
+                            style="height: 80%;"
+                            title="Fri: ₹4,100"></div>
                         <span class="chart-bar-label">Fri</span>
                     </div>
 
                     <div class="chart-bar-col">
                         <div class="chart-bar-fill"
-                             style="height: 95%;"
-                             title="Sat: ₹5,600"></div>
+                            style="height: 95%;"
+                            title="Sat: ₹5,600"></div>
                         <span class="chart-bar-label">Sat</span>
                     </div>
 
                     <div class="chart-bar-col">
                         <div class="chart-bar-fill"
-                             style="height: 100%;"
-                             title="Sun: ₹6,200"></div>
+                            style="height: 100%;"
+                            title="Sun: ₹6,200"></div>
                         <span class="chart-bar-label">Sun</span>
                     </div>
 
@@ -335,8 +335,21 @@ $seller_enquiries = array_filter(
 
             <div class="p-3 d-flex flex-column gap-2">
 
+                <!-- Customer Dashboard -->
+                <a href="../customer/index.php"
+                    class="btn btn-success w-100 py-2 d-flex align-items-center justify-content-between">
+
+                    <span>
+                        <i class="fa-solid fa-cart-shopping me-2"></i>
+                        Customer Dashboard
+                    </span>
+
+                    <i class="fa-solid fa-chevron-right small"></i>
+
+                </a>
+
                 <a href="add-product.php"
-                   class="btn btn-maroon w-100 py-2 d-flex align-items-center justify-content-between">
+                    class="btn btn-maroon w-100 py-2 d-flex align-items-center justify-content-between">
 
                     <span>
                         <i class="fa-solid fa-circle-plus me-2"></i>
@@ -349,7 +362,7 @@ $seller_enquiries = array_filter(
 
 
                 <a href="products.php"
-                   class="btn btn-outline-maroon w-100 py-2 d-flex align-items-center justify-content-between">
+                    class="btn btn-outline-maroon w-100 py-2 d-flex align-items-center justify-content-between">
 
                     <span>
                         <i class="fa-solid fa-boxes-stacked me-2"></i>
@@ -362,7 +375,7 @@ $seller_enquiries = array_filter(
 
 
                 <a href="business.php"
-                   class="btn btn-light border w-100 py-2 d-flex align-items-center justify-content-between">
+                    class="btn btn-light border w-100 py-2 d-flex align-items-center justify-content-between">
 
                     <span>
                         <i class="fa-solid fa-store me-2"></i>
@@ -375,7 +388,7 @@ $seller_enquiries = array_filter(
 
 
                 <a href="earnings.php"
-                   class="btn btn-light border w-100 py-2 d-flex align-items-center justify-content-between">
+                    class="btn btn-light border w-100 py-2 d-flex align-items-center justify-content-between">
 
                     <span>
                         <i class="fa-solid fa-building-columns me-2"></i>
@@ -411,7 +424,7 @@ $seller_enquiries = array_filter(
                 </h5>
 
                 <a href="orders.php"
-                   class="btn btn-outline-maroon btn-sm">
+                    class="btn btn-outline-maroon btn-sm">
                     View All
                 </a>
 
@@ -514,7 +527,7 @@ $seller_enquiries = array_filter(
                                     <td>
 
                                         <a href="order-details.php?id=<?php echo (int)$ord['id']; ?>"
-                                           class="btn btn-sm btn-maroon">
+                                            class="btn btn-sm btn-maroon">
                                             View / Pack
                                         </a>
 
@@ -550,7 +563,7 @@ $seller_enquiries = array_filter(
                 </h5>
 
                 <a href="reviews.php"
-                   class="btn btn-outline-maroon btn-sm">
+                    class="btn btn-outline-maroon btn-sm">
                     All
                 </a>
 
