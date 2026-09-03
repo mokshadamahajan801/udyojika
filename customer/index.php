@@ -11,8 +11,6 @@ $page_subheader = "Track your handmade orders, wishlist items and personalized m
 
 require_once __DIR__ . '/includes/header.php';
 
-echo '<h1 style="color:red">CUSTOMER INDEX IS WORKING</h1>';
-
 $stats = get_customer_dashboard_stats($customer_id, $pdo);
 $all_orders = get_all_orders($pdo);
 
