@@ -117,7 +117,7 @@ $products = get_all_products($pdo);
             </div>
             <div class="p-3">
                 <div class="d-flex flex-column gap-3">
-                    <?php foreach (array_slice($products, 0, 3) as $p): ?>
+                    <?php foreach ($wishlist_products as $p): ?>
                         <div class="d-flex align-items-center gap-3 p-2 rounded-3 border bg-light">
                             <img src="<?php echo htmlspecialchars($p['images'][0] ?? '../images/default-product.jpg'); ?>" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" alt="">
                             <div class="flex-grow-1 lh-1">

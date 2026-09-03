@@ -4,30 +4,18 @@ $page_header = "Your Shopping Basket";
 $page_subheader = "Review handmade items, select delivery address and proceed to checkout";
 require_once __DIR__ . '/includes/header.php';
 
-$cart_items = [
-    [
-        'id' => 1,
-        'name' => 'Authentic Bhajanichi Chakli (Traditional Recipe)',
-        'seller_name' => 'Annapurna Swaad',
-        'unit' => '500g box',
-        'price' => 320,
-        'qty' => 2,
-        'image' => 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?q=80&w=800&auto=format&fit=crop'
-    ],
-    [
-        'id' => 4,
-        'name' => 'Hand-Poured Mogra & Sandalwood Soy Candle',
-        'seller_name' => 'Sugandham Fragrance',
-        'unit' => 'jar (220g - 45 hrs burn)',
-        'price' => 499,
-        'qty' => 1,
-        'image' => 'https://images.unsplash.com/photo-1603006905003-be475563bc59?q=80&w=800&auto=format&fit=crop'
-    ]
-];
+$cart_items = get_customer_cart($pdo, $customer_id);
 
-$subtotal = (320 * 2) + (499 * 1); // 640 + 499 = 1139
-$discount = 100;
-$shipping = 0; // free above 499
+$subtotal = 0;
+
+foreach ($cart_items as $item) {
+    $subtotal += $item['price'] * $item['qty'];
+}
+
+$discount = 0;
+
+$shipping = ($subtotal >= 499 || $subtotal == 0) ? 0 : 50;
+
 $total = $subtotal - $discount + $shipping;
 ?>
 
@@ -36,7 +24,7 @@ $total = $subtotal - $discount + $shipping;
     <div class="col-lg-8">
         <div class="dashboard-card">
             <div class="dashboard-card-header">
-                <h5 class="dashboard-card-title"><i class="fa-solid fa-cart-shopping text-maroon-800"></i> Items in Basket (2)</h5>
+                <h5 class="dashboard-card-title"><i class="fa-solid fa-cart-shopping text-maroon-800"></i> Items in Basket (<?php echo count($cart_items); ?>)</h5>
                 <a href="../products.php" class="btn btn-outline-maroon btn-sm">+ Add More Items</a>
             </div>
             <div class="p-3">

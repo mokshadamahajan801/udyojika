@@ -581,10 +581,12 @@ function get_all_reviews()
             SELECT
                 r.*,
                 u.name AS customer_name,
-                p.name AS product_name
+                p.name AS product_name,
+                s.business_name AS seller_name
             FROM reviews r
             LEFT JOIN users u ON r.user_id = u.id
             LEFT JOIN products p ON r.product_id = p.id
+            LEFT JOIN sellers s ON p.seller_id = s.id
             ORDER BY r.id DESC
         ");
 
@@ -775,4 +777,49 @@ function get_order_by_id(PDO $pdo, $order_id)
     $order['items'] = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
 
     return $order;
+}
+/**
+ * Get cart items for a customer
+ */
+function get_customer_cart(PDO $pdo, $customer_id)
+{
+    $stmt = $pdo->prepare("
+        SELECT
+            ci.id AS cart_id,
+            ci.customer_id,
+            ci.product_id,
+            ci.quantity,
+            p.name,
+            p.price,
+            p.images,
+            p.unit,
+            s.business_name AS seller_name
+        FROM cart_items ci
+        INNER JOIN products p ON p.id = ci.product_id
+        INNER JOIN sellers s ON s.id = p.seller_id
+        WHERE ci.customer_id = ?
+        ORDER BY ci.created_at DESC
+    ");
+
+    $stmt->execute([$customer_id]);
+
+    $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($items as &$item) {
+
+        $images = json_decode($item['images'] ?? '', true);
+
+        if (is_array($images) && !empty($images)) {
+            $item['image'] = $images[0];
+        } else {
+            $item['image'] = '';
+        }
+
+        $item['qty'] = (int)$item['quantity'];
+        $item['price'] = (float)$item['price'];
+    }
+
+    unset($item);
+
+    return $items;
 }
