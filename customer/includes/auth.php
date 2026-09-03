@@ -3,6 +3,6 @@
 require_once __DIR__ . '/../../includes/db.php';
 require_once __DIR__ . '/../../includes/functions.php';
 
-$current_user = require_role(['customer', 'admin', 'seller']);
+$current_user = require_role('customer');
 
 $customer_id = $current_user['id'] ?? null;

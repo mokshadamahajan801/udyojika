@@ -29,8 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Check request exists
     $stmt = $pdo->prepare("
-        SELECT id, full_name, business_name, status
-        FROM seller_requests
+        SELECT id, user_id, full_name, business_name, status
+FROM seller_requests
         WHERE id = ?
         LIMIT 1
     ");
@@ -52,27 +52,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // APPROVE
     // -----------------------------------------------------
 
-    if ($action === 'approve') {
+   if ($action === 'approve') {
 
-        if ($request['status'] !== 'pending') {
+    if ($request['status'] !== 'pending') {
+        header('Location: seller-requests.php?error=already_processed');
+        exit;
+    }
 
-            header('Location: seller-requests.php?error=already_processed');
-            exit;
+    $user_id = (int)$request['user_id'];
 
-        }
+    try {
 
+        $pdo->beginTransaction();
+
+        // 1. Approve seller request
         $stmt = $pdo->prepare("
             UPDATE seller_requests
             SET status = 'approved'
             WHERE id = ?
         ");
-
         $stmt->execute([$req_id]);
 
 
+        // 2. Change user role to seller
+        $stmt = $pdo->prepare("
+            UPDATE users
+            SET role = 'seller'
+            WHERE id = ?
+        ");
+        $stmt->execute([$user_id]);
+
+
+        // 3. Create/update seller profile
+        $stmt = $pdo->prepare("
+            SELECT id
+            FROM sellers
+            WHERE user_id = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$user_id]);
+
+        $existing_seller = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+        if ($existing_seller) {
+
+            $stmt = $pdo->prepare("
+                UPDATE sellers
+                SET status = 'approved'
+                WHERE user_id = ?
+            ");
+
+            $stmt->execute([$user_id]);
+
+        } else {
+
+            $stmt = $pdo->prepare("
+                INSERT INTO sellers
+                    (user_id, owner_name, business_name, status, created_at)
+                SELECT
+                    user_id,
+                    full_name,
+                    business_name,
+                    'approved',
+                    NOW()
+                FROM seller_requests
+                WHERE id = ?
+            ");
+
+            $stmt->execute([$req_id]);
+        }
+
+
+        $pdo->commit();
+
         header('Location: seller-requests.php?success=approved');
         exit;
+
+    } catch (Exception $e) {
+
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        header('Location: seller-requests.php?error=approval_failed');
+        exit;
     }
+}
 
 
     // -----------------------------------------------------

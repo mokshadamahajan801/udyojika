@@ -1,32 +1,107 @@
 <?php
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+/*
+|--------------------------------------------------------------------------
+| Seller Authentication
+|--------------------------------------------------------------------------
+*/
+
+require_once __DIR__ . '/includes/auth.php';
+
+/*
+|--------------------------------------------------------------------------
+| Seller Information
+|--------------------------------------------------------------------------
+*/
+
+$seller_id = (int)($seller_profile['id'] ?? $current_user['id'] ?? 0);
+
+if ($seller_id <= 0) {
+    die("Seller ID not found.");
+}
+
+/*
+|--------------------------------------------------------------------------
+| Page Header
+|--------------------------------------------------------------------------
+*/
+
 $page_title = "Maker Dashboard - Udyojika";
-$page_header = "Namaste, " . htmlspecialchars($seller_profile['owner_name']);
+
+$page_header = "Namaste, " . htmlspecialchars(
+    $seller_profile['owner_name'] ?? $current_user['name'] ?? 'Maker'
+);
+
 $page_subheader = "Here is an overview of your orders, sales and patron reviews";
+
 require_once __DIR__ . '/includes/header.php';
 
+/*
+|--------------------------------------------------------------------------
+| Dashboard Statistics
+|--------------------------------------------------------------------------
+*/
+
 $stats = get_seller_dashboard_stats($seller_id);
+
 $all_orders = get_all_orders();
 
-// Filter orders for this seller
+/*
+|--------------------------------------------------------------------------
+| Filter Orders For This Seller
+|--------------------------------------------------------------------------
+*/
+
 $seller_orders = [];
+
 foreach ($all_orders as $ord) {
+
     $seller_items = [];
+
     foreach ($ord['items'] as $item) {
-        if ((int)$item['seller_id'] === (int)$seller_id) {
+
+        if ((int)$item['seller_id'] === $seller_id) {
             $seller_items[] = $item;
         }
     }
+
     if (!empty($seller_items)) {
+
         $ord['seller_items'] = $seller_items;
+
         $seller_orders[] = $ord;
     }
 }
 
+/*
+|--------------------------------------------------------------------------
+| Seller Reviews
+|--------------------------------------------------------------------------
+*/
+
 $all_reviews = get_all_reviews();
-$seller_reviews = array_filter($all_reviews, fn($r) => (int)$r['seller_id'] === (int)$seller_id);
+
+$seller_reviews = array_filter(
+    $all_reviews,
+    fn($r) => (int)$r['seller_id'] === $seller_id
+);
+
+/*
+|--------------------------------------------------------------------------
+| Seller Enquiries
+|--------------------------------------------------------------------------
+*/
 
 $all_enquiries = get_all_enquiries();
-$seller_enquiries = array_filter($all_enquiries, fn($e) => (int)$e['seller_id'] === (int)$seller_id);
+
+$seller_enquiries = array_filter(
+    $all_enquiries,
+    fn($e) => (int)$e['seller_id'] === $seller_id
+);
+
 ?>
 
 <!-- 10 Summary Metric Cards Grid -->

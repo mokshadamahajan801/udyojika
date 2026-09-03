@@ -303,6 +303,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $categories = get_categories($pdo);
 
+require_once __DIR__ . '/includes/header.php';
+
 ?>
 <!-- Hero Banner -->
 <div class="bg-maroon-900 text-white py-5">
