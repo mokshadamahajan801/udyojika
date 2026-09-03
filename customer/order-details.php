@@ -4,8 +4,16 @@ $page_header = "Order Receipt";
 $page_subheader = "View detailed invoice and shipping updates";
 require_once __DIR__ . '/includes/header.php';
 
-$order_id = $_GET['id'] ?? 1;
-$order = get_order_by_number($order_id);
+$order_id = $_GET['id'] ?? null;
+
+if (!$order_id) {
+    echo "<div class='alert alert-danger'>Invalid order.</div>";
+    require_once __DIR__ . '/includes/footer.php';
+    exit;
+}
+
+$order = get_order_by_id($pdo, $order_id);
+
 if (!$order) {
     echo "<div class='alert alert-danger'>Order not found.</div>";
     require_once __DIR__ . '/includes/footer.php';

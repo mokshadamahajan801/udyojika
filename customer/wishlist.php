@@ -1,11 +1,30 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 $page_title = "My Wishlist - Customer Portal";
 $page_header = "Saved Handmade Creations";
 $page_subheader = "Items you are planning to order from our women home makers";
 require_once __DIR__ . '/includes/header.php';
 
-$products = get_all_products();
-$wishlist_items = array_slice($products, 0, 3);
+$products = get_all_products($pdo);
+
+$stmt = $pdo->prepare("
+    SELECT product_id
+    FROM wishlist
+    WHERE customer_id = ?
+    ORDER BY created_at DESC
+");
+
+$stmt->execute([$customer_id]);
+
+$wishlist_product_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+$wishlist_items = array_values(
+    array_filter($products, function ($product) use ($wishlist_product_ids) {
+        return in_array((int)$product['id'], array_map('intval', $wishlist_product_ids), true);
+    })
+);
+
 ?>
 
 <div class="dashboard-card">

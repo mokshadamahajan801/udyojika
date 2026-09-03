@@ -4,7 +4,7 @@ $page_header = "My Purchase History";
 $page_subheader = "View status, receipts and tracking updates for all your orders";
 require_once __DIR__ . '/includes/header.php';
 
-$all_orders = get_all_orders();
+$all_orders = get_all_orders($pdo);
 $my_orders = array_filter($all_orders, fn($o) => (int)$o['customer_id'] === (int)$customer_id);
 ?>
 

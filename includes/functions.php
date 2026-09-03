@@ -721,4 +721,55 @@ function get_seller_dashboard_stats($seller_id)
     $stats['average_rating'] = round((float)($row['average_rating'] ?? 0), 1);
 
     return $stats;
+
+/**
+ * Get all addresses for a customer
+ */
+function get_customer_addresses($customer_id)
+{
+    global $pdo;
+
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM addresses
+        WHERE customer_id = ?
+        ORDER BY is_default DESC, created_at DESC
+    ");
+
+    $stmt->execute([$customer_id]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/**
+ * Get one order with its items
+ */
+function get_order_by_id(PDO $pdo, $order_id)
+{
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM orders
+        WHERE id = ?
+        LIMIT 1
+    ");
+
+    $stmt->execute([$order_id]);
+
+    $order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$order) {
+        return null;
+    }
+
+    $itemStmt = $pdo->prepare("
+        SELECT *
+        FROM order_items
+        WHERE order_id = ?
+    ");
+
+    $itemStmt->execute([$order['id']]);
+
+    $order['items'] = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    return $order;
 }

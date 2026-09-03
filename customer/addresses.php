@@ -5,10 +5,88 @@ $page_subheader = "Manage your home and office delivery destinations";
 require_once __DIR__ . '/includes/header.php';
 
 $addresses = get_customer_addresses($customer_id);
+
 $success_msg = '';
+$error_msg = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $success_msg = "New delivery address added successfully!";
+
+    $title = trim($_POST['title'] ?? '');
+    $full_name = trim($_POST['full_name'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $address_line1 = trim($_POST['address_line1'] ?? '');
+    $address_line2 = trim($_POST['address_line2'] ?? '');
+    $city = trim($_POST['city'] ?? '');
+    $pincode = trim($_POST['pincode'] ?? '');
+
+    if (
+        empty($title) ||
+        empty($full_name) ||
+        empty($phone) ||
+        empty($address_line1) ||
+        empty($city) ||
+        empty($pincode)
+    ) {
+
+        $error_msg = "Please fill in all required fields.";
+
+    } else {
+
+        try {
+
+            // Check if customer already has an address
+            $checkStmt = $pdo->prepare("
+                SELECT COUNT(*)
+                FROM addresses
+                WHERE customer_id = ?
+            ");
+
+            $checkStmt->execute([$customer_id]);
+
+            $address_count = $checkStmt->fetchColumn();
+
+            // First address becomes default
+            $is_default = ($address_count == 0) ? 1 : 0;
+
+            $stmt = $pdo->prepare("
+                INSERT INTO addresses (
+                    customer_id,
+                    title,
+                    full_name,
+                    phone,
+                    address_line1,
+                    address_line2,
+                    city,
+                    state,
+                    pincode,
+                    is_default
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+
+            $stmt->execute([
+                $customer_id,
+                $title,
+                $full_name,
+                $phone,
+                $address_line1,
+                $address_line2,
+                $city,
+                'Maharashtra',
+                $pincode,
+                $is_default
+            ]);
+
+            $success_msg = "New delivery address added successfully!";
+
+            // Reload addresses after adding new one
+            $addresses = get_customer_addresses($customer_id);
+
+        } catch (PDOException $e) {
+
+            $error_msg = "Something went wrong while saving your address.";
+        }
+    }
 }
 ?>
 
@@ -16,6 +94,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
         <i class="fa-solid fa-circle-check fs-4"></i>
         <div><?php echo $success_msg; ?></div>
+    </div>
+<?php endif; ?>
+
+<?php if (!empty($error_msg)): ?>
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-4">
+        <i class="fa-solid fa-circle-exclamation fs-4"></i>
+        <div><?php echo htmlspecialchars($error_msg); ?></div>
     </div>
 <?php endif; ?>
 

@@ -5,8 +5,78 @@ $page_subheader = "Manage your contact info, email preferences and account crede
 require_once __DIR__ . '/includes/header.php';
 
 $success_msg = '';
+$error_msg = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $success_msg = "Profile information updated successfully!";
+
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+
+    $new_password = $_POST['new_password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+
+    if (empty($name) || empty($email) || empty($phone)) {
+
+        $error_msg = "Please fill in all required fields.";
+
+    } elseif (!empty($new_password) && $new_password !== $confirm_password) {
+
+        $error_msg = "Passwords do not match.";
+
+    } else {
+
+        try {
+
+            if (!empty($new_password)) {
+
+                $hashed_password = password_hash(
+                    $new_password,
+                    PASSWORD_DEFAULT
+                );
+
+                $stmt = $pdo->prepare("
+                    UPDATE users
+                    SET name = ?, email = ?, phone = ?, password = ?
+                    WHERE id = ?
+                ");
+
+                $stmt->execute([
+                    $name,
+                    $email,
+                    $phone,
+                    $hashed_password,
+                    $customer_id
+                ]);
+
+            } else {
+
+                $stmt = $pdo->prepare("
+                    UPDATE users
+                    SET name = ?, email = ?, phone = ?
+                    WHERE id = ?
+                ");
+
+                $stmt->execute([
+                    $name,
+                    $email,
+                    $phone,
+                    $customer_id
+                ]);
+            }
+
+            $success_msg = "Profile information updated successfully!";
+
+            // Update current page data immediately
+            $current_user['name'] = $name;
+            $current_user['email'] = $email;
+            $current_user['phone'] = $phone;
+
+        } catch (PDOException $e) {
+
+            $error_msg = "Something went wrong while updating your profile.";
+        }
+    }
 }
 ?>
 
@@ -14,6 +84,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
         <i class="fa-solid fa-circle-check fs-4"></i>
         <div><?php echo $success_msg; ?></div>
+    </div>
+<?php endif; ?>
+
+<?php if (!empty($error_msg)): ?>
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-4">
+        <i class="fa-solid fa-circle-exclamation fs-4"></i>
+        <div><?php echo htmlspecialchars($error_msg); ?></div>
     </div>
 <?php endif; ?>
 
