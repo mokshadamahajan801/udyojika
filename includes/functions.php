@@ -1047,7 +1047,7 @@ function get_order_by_id(PDO $pdo, $order_id)
 
     return $order;
 }
-?>
+
 /**
  * Get cart items for a customer
  */
@@ -1095,3 +1095,4 @@ function get_customer_cart(PDO $pdo, $customer_id)
 
     return $items;
 }
+?>
