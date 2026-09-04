@@ -1,4 +1,7 @@
 <?php
+
+require_once __DIR__ . '/includes/auth.php';
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 $page_title = "My Wishlist - Customer Portal";
@@ -21,10 +24,13 @@ $wishlist_product_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 $wishlist_items = array_values(
     array_filter($products, function ($product) use ($wishlist_product_ids) {
-        return in_array((int)$product['id'], array_map('intval', $wishlist_product_ids), true);
+        return in_array(
+            (int)$product['id'],
+            array_map('intval', $wishlist_product_ids),
+            true
+        );
     })
 );
-
 ?>
 
 <div class="dashboard-card">

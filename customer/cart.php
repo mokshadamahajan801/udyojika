@@ -1,33 +1,60 @@
 <?php
+
+require_once __DIR__ . '/includes/auth.php';
 $page_title = "My Cart - Customer Portal";
 $page_header = "Your Shopping Basket";
 $page_subheader = "Review handmade items, select delivery address and proceed to checkout";
+
+if (isset($_GET['update_id'], $_GET['quantity'])) {
+    $update_id = (int)$_GET['update_id'];
+    $quantity = max(1, (int)$_GET['quantity']);
+
+    $stmt = $pdo->prepare("
+        UPDATE cart_items
+        SET quantity = ?
+        WHERE id = ? AND customer_id = ?
+    ");
+
+    $stmt->execute([
+        $quantity,
+        $update_id,
+        $customer_id
+    ]);
+
+    header("Location: cart.php");
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_cart_id'])) {
+    $remove_id = (int)$_POST['remove_cart_id'];
+
+    $stmt = $pdo->prepare("
+        DELETE FROM cart_items
+        WHERE id = ? AND customer_id = ?
+    ");
+
+    $stmt->execute([
+        $remove_id,
+        $customer_id
+    ]);
+
+    header("Location: cart.php");
+    exit;
+}
 require_once __DIR__ . '/includes/header.php';
 
-$cart_items = [
-    [
-        'id' => 1,
-        'name' => 'Authentic Bhajanichi Chakli (Traditional Recipe)',
-        'seller_name' => 'Annapurna Swaad',
-        'unit' => '500g box',
-        'price' => 320,
-        'qty' => 2,
-        'image' => 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?q=80&w=800&auto=format&fit=crop'
-    ],
-    [
-        'id' => 4,
-        'name' => 'Hand-Poured Mogra & Sandalwood Soy Candle',
-        'seller_name' => 'Sugandham Fragrance',
-        'unit' => 'jar (220g - 45 hrs burn)',
-        'price' => 499,
-        'qty' => 1,
-        'image' => 'https://images.unsplash.com/photo-1603006905003-be475563bc59?q=80&w=800&auto=format&fit=crop'
-    ]
-];
+$cart_items = get_customer_cart($pdo, $customer_id);
 
-$subtotal = (320 * 2) + (499 * 1); // 640 + 499 = 1139
-$discount = 100;
-$shipping = 0; // free above 499
+$subtotal = 0;
+
+foreach ($cart_items as $item) {
+    $subtotal += $item['price'] * $item['qty'];
+}
+
+$discount = 0;
+
+$shipping = ($subtotal >= 499 || $subtotal == 0) ? 0 : 50;
+
 $total = $subtotal - $discount + $shipping;
 ?>
 
@@ -36,7 +63,7 @@ $total = $subtotal - $discount + $shipping;
     <div class="col-lg-8">
         <div class="dashboard-card">
             <div class="dashboard-card-header">
-                <h5 class="dashboard-card-title"><i class="fa-solid fa-cart-shopping text-maroon-800"></i> Items in Basket (2)</h5>
+                <h5 class="dashboard-card-title"><i class="fa-solid fa-cart-shopping text-maroon-800"></i> Items in Basket (<?php echo count($cart_items); ?>)</h5>
                 <a href="../products.php" class="btn btn-outline-maroon btn-sm">+ Add More Items</a>
             </div>
             <div class="p-3">
@@ -54,14 +81,25 @@ $total = $subtotal - $discount + $shipping;
 
                             <div class="d-flex align-items-center gap-3">
                                 <div class="input-group input-group-sm" style="width: 100px;">
-                                    <button class="btn btn-outline-secondary" type="button">-</button>
+                                    <button class="btn btn-outline-secondary" type="button"
+                                            onclick="updateCartQuantity(<?php echo $item['cart_id']; ?>, <?php echo max(1, $item['qty'] - 1); ?>)">
+                                        -
+                                    </button>
                                     <input type="text" class="form-control text-center" value="<?php echo $item['qty']; ?>" readonly>
-                                    <button class="btn btn-outline-secondary" type="button">+</button>
+                                    <button class="btn btn-outline-secondary" type="button"
+                                            onclick="updateCartQuantity(<?php echo $item['cart_id']; ?>, <?php echo $item['qty'] + 1; ?>)">
+                                        +
+                                    </button>
                                 </div>
                                 <div class="text-end" style="min-width: 80px;">
                                     <strong class="text-maroon-900 fs-6">₹<?php echo $item['price'] * $item['qty']; ?></strong>
                                 </div>
-                                <button class="btn btn-light btn-sm text-danger border" title="Remove" onclick="alert('Item removed from cart');"><i class="fa-solid fa-trash-can"></i></button>
+                                <form method="POST" action="cart.php" class="d-inline">
+                                    <input type="hidden" name="remove_cart_id" value="<?php echo $item['cart_id']; ?>">
+                                    <button type="submit" class="btn btn-light btn-sm text-danger border" title="Remove">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -99,12 +137,22 @@ $total = $subtotal - $discount + $shipping;
                     <span style="font-size: 0.78rem;">Your entire payment goes straight to our women home entrepreneurs. Zero commission deducted.</span>
                 </div>
 
-                <button class="btn btn-maroon w-100 py-2 fw-bold shadow-sm" onclick="alert('Proceeding to Razorpay / UPI Secure Payment Gateway for ₹<?php echo $total; ?>');">
+                <a href="checkout.php" class="btn btn-maroon w-100 py-2 fw-bold shadow-sm">
                     Proceed to Checkout <i class="fa-solid fa-arrow-right ms-1"></i>
-                </button>
+                </a>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function updateCartQuantity(cartId, quantity) {
+    if (quantity < 1) {
+        quantity = 1;
+    }
+
+    window.location.href = "cart.php?update_id=" + cartId + "&quantity=" + quantity;
+}
+</script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
