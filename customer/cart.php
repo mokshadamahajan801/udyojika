@@ -4,6 +4,36 @@ $page_header = "Your Shopping Basket";
 $page_subheader = "Review handmade items, select delivery address and proceed to checkout";
 require_once __DIR__ . '/includes/header.php';
 
+if (isset($_GET['update_id'], $_GET['quantity'])) {
+    $update_id = (int)$_GET['update_id'];
+    $quantity = max(1, (int)$_GET['quantity']);
+
+    $stmt = $pdo->prepare("
+        UPDATE cart_items
+        SET quantity = ?
+        WHERE id = ? AND customer_id = ?
+    ");
+
+    $stmt->execute([$quantity, $update_id, $customer_id]);
+
+    header("Location: cart.php");
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_cart_id'])) {
+    $remove_id = (int)$_POST['remove_cart_id'];
+
+    $stmt = $pdo->prepare("
+        DELETE FROM cart_items
+        WHERE id = ? AND customer_id = ?
+    ");
+
+    $stmt->execute([$remove_id, $customer_id]);
+
+    header("Location: cart.php");
+    exit;
+}
+
 $cart_items = get_customer_cart($pdo, $customer_id);
 
 $subtotal = 0;
@@ -42,14 +72,25 @@ $total = $subtotal - $discount + $shipping;
 
                             <div class="d-flex align-items-center gap-3">
                                 <div class="input-group input-group-sm" style="width: 100px;">
-                                    <button class="btn btn-outline-secondary" type="button">-</button>
+                                    <button class="btn btn-outline-secondary" type="button"
+                                            onclick="updateCartQuantity(<?php echo $item['cart_id']; ?>, <?php echo max(1, $item['qty'] - 1); ?>)">
+                                        -
+                                    </button>
                                     <input type="text" class="form-control text-center" value="<?php echo $item['qty']; ?>" readonly>
-                                    <button class="btn btn-outline-secondary" type="button">+</button>
+                                    <button class="btn btn-outline-secondary" type="button"
+                                            onclick="updateCartQuantity(<?php echo $item['cart_id']; ?>, <?php echo $item['qty'] + 1; ?>)">
+                                        +
+                                    </button>
                                 </div>
                                 <div class="text-end" style="min-width: 80px;">
                                     <strong class="text-maroon-900 fs-6">₹<?php echo $item['price'] * $item['qty']; ?></strong>
                                 </div>
-                                <button class="btn btn-light btn-sm text-danger border" title="Remove" onclick="alert('Item removed from cart');"><i class="fa-solid fa-trash-can"></i></button>
+                                <form method="POST" action="cart.php" class="d-inline">
+                                    <input type="hidden" name="remove_cart_id" value="<?php echo $item['cart_id']; ?>">
+                                    <button type="submit" class="btn btn-light btn-sm text-danger border" title="Remove">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -94,5 +135,15 @@ $total = $subtotal - $discount + $shipping;
         </div>
     </div>
 </div>
+
+<script>
+function updateCartQuantity(cartId, quantity) {
+    if (quantity < 1) {
+        quantity = 1;
+    }
+
+    window.location.href = "cart.php?update_id=" + cartId + "&quantity=" + quantity;
+}
+</script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

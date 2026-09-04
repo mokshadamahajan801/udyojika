@@ -596,7 +596,6 @@ function get_all_reviews()
         return [];
     }
 }
-
 function get_all_users()
 {
     global $pdo;

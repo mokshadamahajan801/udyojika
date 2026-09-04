@@ -20,6 +20,24 @@ $my_orders = array_filter(
 );
 
 $products = get_all_products($pdo);
+
+$stmt = $pdo->prepare("
+    SELECT product_id
+    FROM wishlist
+    WHERE customer_id = ?
+    ORDER BY created_at DESC
+    LIMIT 3
+");
+
+$stmt->execute([$customer_id]);
+
+$wishlist_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+$wishlist_products = array_values(
+    array_filter($products, function ($p) use ($wishlist_ids) {
+        return in_array((int)$p['id'], array_map('intval', $wishlist_ids), true);
+    })
+);
 ?>
 
 <!-- 4 Key Customer Metric Cards -->
@@ -117,16 +135,36 @@ $products = get_all_products($pdo);
             </div>
             <div class="p-3">
                 <div class="d-flex flex-column gap-3">
-                    <?php foreach ($wishlist_products as $p): ?>
-                        <div class="d-flex align-items-center gap-3 p-2 rounded-3 border bg-light">
-                            <img src="<?php echo htmlspecialchars($p['images'][0] ?? '../images/default-product.jpg'); ?>" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" alt="">
-                            <div class="flex-grow-1 lh-1">
-                                <strong class="small text-dark d-block text-truncate mb-1" style="max-width: 150px;"><?php echo htmlspecialchars($p['name']); ?></strong>
-                                <span class="fw-bold text-maroon-800 small">₹<?php echo $p['price']; ?></span>
+                    <?php if (empty($wishlist_products)): ?>
+                        <p class="text-muted text-center py-3">
+                            Your wishlist is empty.
+                            <a href="wishlist.php">View Wishlist</a>
+                        </p>
+                    <?php else: ?>
+
+                        <?php foreach ($wishlist_products as $p): ?>
+                            <div class="d-flex align-items-center gap-3 p-2 rounded-3 border bg-light">
+                                <img src="<?php echo htmlspecialchars($p['images'][0] ?? '../images/default-product.jpg'); ?>"
+                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;"
+                                    alt="">
+
+                                <div class="flex-grow-1 lh-1">
+                                    <strong class="small text-dark d-block text-truncate mb-1" style="max-width: 150px;">
+                                        <?php echo htmlspecialchars($p['name']); ?>
+                                    </strong>
+
+                                    <span class="fw-bold text-maroon-800 small">
+                                        ₹<?php echo $p['price']; ?>
+                                    </span>
+                                </div>
+
+                                <a href="cart.php" class="btn btn-sm btn-maroon py-1 px-2" title="Move to Cart">
+                                    <i class="fa-solid fa-cart-plus"></i>
+                                </a>
                             </div>
-                            <a href="cart.php" class="btn btn-sm btn-maroon py-1 px-2" title="Move to Cart"><i class="fa-solid fa-cart-plus"></i></a>
-                        </div>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
