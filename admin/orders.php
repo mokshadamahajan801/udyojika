@@ -8,14 +8,32 @@ $orders = get_all_orders($pdo);
 
 $filter_status = $_GET['status'] ?? 'all';
 $action_msg = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $order_id = $_POST['order_id'] ?? 0;
+
+    $order_id = (int)($_POST['order_id'] ?? 0);
     $new_status = $_POST['order_status'] ?? '';
-    $action_msg = "Order #{$order_id} status updated to " . strtoupper($new_status) . ". Customer notified via SMS.";
+
+    $allowed_statuses = ['pending', 'processing', 'completed', 'cancelled'];
+
+    if ($order_id > 0 && in_array($new_status, $allowed_statuses, true)) {
+
+        $stmt = $pdo->prepare("
+            UPDATE orders
+            SET order_status = ?
+            WHERE id = ?
+        ");
+
+        $stmt->execute([$new_status, $order_id]);
+
+        $action_msg = "Order #{$order_id} status updated to " . strtoupper($new_status) . ".";
+
+    } else {
+
+        $action_msg = "Invalid order status.";
+
+    }
 }
 ?>
-
 <?php if (!empty($action_msg)): ?>
     <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
         <i class="fa-solid fa-circle-check fs-4"></i>

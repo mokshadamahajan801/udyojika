@@ -83,6 +83,7 @@ $current_user = get_logged_in_user();
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 p-2">
                         <li><span class="dropdown-item-text small text-muted">Signed in as <strong>Admin</strong></span></li>
                         <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item small" href="profile.php"><i class="fa-solid fa-user me-2"></i> Profile</a></li>
                         <li><a class="dropdown-item small" href="settings.php"><i class="fa-solid fa-gear me-2"></i> Settings</a></li>
                         <li><a class="dropdown-item small text-danger" href="../logout.php"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Sign Out</a></li>
                     </ul>
