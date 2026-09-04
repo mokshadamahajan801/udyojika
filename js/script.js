@@ -107,24 +107,28 @@
 
   // --- Add to Cart Action ---
   window.addToCart = function (id, name, price, image, sellerName, unit, quantity = 1) {
+    if (!window.isUserLoggedIn) {
+        window.location.href = 'login.php';
+        return;
+    }
     const cart = getCart();
     const existingIndex = cart.findIndex(item => String(item.id) === String(id));
     if (existingIndex > -1) {
-      cart[existingIndex].quantity += parseInt(quantity, 10);
+        cart[existingIndex].quantity += parseInt(quantity, 10);
     } else {
-      cart.push({
-        id: String(id),
-        name: name,
-        price: parseFloat(price),
-        image: image,
-        sellerName: sellerName || 'Home Maker',
-        unit: unit || 'item',
-        quantity: parseInt(quantity, 10)
-      });
+        cart.push({
+            id: String(id),
+            name: name,
+            price: parseFloat(price),
+            image: image,
+            sellerName: sellerName || 'Home Maker',
+            unit: unit || 'item',
+            quantity: parseInt(quantity, 10)
+        });
     }
     saveCart(cart);
     showToast(`<strong>${name}</strong> added to your cart!`, 'success', 'Cart Updated');
-  };
+};
 
   // --- Toggle Wishlist Action ---
   window.toggleWishlist = function (id, name = 'Item') {
