@@ -48,6 +48,45 @@ $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['add_to_wishlist'], $_POST['product_id'])
+) {
+    if (empty($_SESSION['user_id'])) {
+        header("Location: login.php");
+        exit;
+    }
+
+    $customer_id = (int)$_SESSION['user_id'];
+    $product_id = (int)$_POST['product_id'];
+
+    $stmt = $pdo->prepare("
+        SELECT id
+        FROM wishlist
+        WHERE customer_id = ? AND product_id = ?
+        LIMIT 1
+    ");
+
+    $stmt->execute([$customer_id, $product_id]);
+
+    $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$existing) {
+        $stmt = $pdo->prepare("
+            INSERT INTO wishlist (customer_id, product_id)
+            VALUES (?, ?)
+        ");
+
+        $stmt->execute([
+            $customer_id,
+            $product_id
+        ]);
+    }
+
+    header("Location: product-details.php?slug=" . urlencode($slug));
+    exit;
+}
+
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
     isset($_POST['add_to_cart'], $_POST['product_id'])
 ) {
     if (empty($_SESSION['user_id'])) {
@@ -263,9 +302,14 @@ require_once __DIR__ . '/includes/header.php';
                                 <i class="fa-solid fa-bag-shopping"></i> Add to Cart
                             </button>
                         </form>
-                        <button type="button" class="btn btn-outline-danger p-2 px-3 rounded-pill" onclick="window.toggleWishlist('<?php echo $product['id']; ?>', '<?php echo addslashes($product['name']); ?>')">
-                            <i class="fa-regular fa-heart fs-5"></i>
-                        </button>
+                        <form method="POST" action="product-details.php?slug=<?php echo urlencode($product['slug']); ?>">
+                            <input type="hidden" name="add_to_wishlist" value="1">
+                            <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+
+                            <button type="submit" class="btn btn-outline-danger p-2 px-3 rounded-pill">
+                                <i class="fa-regular fa-heart fs-5"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
 

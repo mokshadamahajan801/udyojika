@@ -1,8 +1,9 @@
 <?php
+
+require_once __DIR__ . '/includes/auth.php';
 $page_title = "My Cart - Customer Portal";
 $page_header = "Your Shopping Basket";
 $page_subheader = "Review handmade items, select delivery address and proceed to checkout";
-require_once __DIR__ . '/includes/header.php';
 
 if (isset($_GET['update_id'], $_GET['quantity'])) {
     $update_id = (int)$_GET['update_id'];
@@ -14,7 +15,11 @@ if (isset($_GET['update_id'], $_GET['quantity'])) {
         WHERE id = ? AND customer_id = ?
     ");
 
-    $stmt->execute([$quantity, $update_id, $customer_id]);
+    $stmt->execute([
+        $quantity,
+        $update_id,
+        $customer_id
+    ]);
 
     header("Location: cart.php");
     exit;
@@ -28,11 +33,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_cart_id'])) {
         WHERE id = ? AND customer_id = ?
     ");
 
-    $stmt->execute([$remove_id, $customer_id]);
+    $stmt->execute([
+        $remove_id,
+        $customer_id
+    ]);
 
     header("Location: cart.php");
     exit;
 }
+require_once __DIR__ . '/includes/header.php';
 
 $cart_items = get_customer_cart($pdo, $customer_id);
 
