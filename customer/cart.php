@@ -128,9 +128,9 @@ $total = $subtotal - $discount + $shipping;
                     <span style="font-size: 0.78rem;">Your entire payment goes straight to our women home entrepreneurs. Zero commission deducted.</span>
                 </div>
 
-                <button class="btn btn-maroon w-100 py-2 fw-bold shadow-sm" onclick="alert('Proceeding to Razorpay / UPI Secure Payment Gateway for ₹<?php echo $total; ?>');">
+                <a href="checkout.php" class="btn btn-maroon w-100 py-2 fw-bold shadow-sm">
                     Proceed to Checkout <i class="fa-solid fa-arrow-right ms-1"></i>
-                </button>
+                </a>
             </div>
         </div>
     </div>

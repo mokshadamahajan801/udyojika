@@ -792,6 +792,7 @@ function get_customer_cart(PDO $pdo, $customer_id)
             p.price,
             p.images,
             p.unit,
+            s.id AS seller_id,
             s.business_name AS seller_name
         FROM cart_items ci
         INNER JOIN products p ON p.id = ci.product_id
