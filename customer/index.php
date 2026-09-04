@@ -12,32 +12,49 @@ $page_subheader = "Track your handmade orders, wishlist items and personalized m
 require_once __DIR__ . '/includes/header.php';
 
 $stats = get_customer_dashboard_stats($customer_id, $pdo);
-$all_orders = get_all_orders($pdo);
 
-$my_orders = array_filter(
-    $all_orders,
-    fn($o) => (int)$o['customer_id'] === (int)$customer_id
-);
+$stmt = $pdo->prepare("
+    SELECT *
+    FROM orders
+    WHERE customer_id = ?
+    ORDER BY created_at DESC
+    LIMIT 5
+");
+
+$stmt->execute([$customer_id]);
+
+$my_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($my_orders as &$order) {
+
+    $itemStmt = $pdo->prepare("
+        SELECT *
+        FROM order_items
+        WHERE order_id = ?
+    ");
+
+    $itemStmt->execute([$order['id']]);
+
+    $order['items'] = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+unset($order);
 
 $products = get_all_products($pdo);
 
 $stmt = $pdo->prepare("
-    SELECT product_id
-    FROM wishlist
-    WHERE customer_id = ?
-    ORDER BY created_at DESC
+    SELECT
+        p.*
+    FROM wishlist w
+    INNER JOIN products p ON p.id = w.product_id
+    WHERE w.customer_id = ?
+    ORDER BY w.created_at DESC
     LIMIT 3
 ");
 
 $stmt->execute([$customer_id]);
 
-$wishlist_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-$wishlist_products = array_values(
-    array_filter($products, function ($p) use ($wishlist_ids) {
-        return in_array((int)$p['id'], array_map('intval', $wishlist_ids), true);
-    })
-);
+$wishlist_products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!-- 4 Key Customer Metric Cards -->
