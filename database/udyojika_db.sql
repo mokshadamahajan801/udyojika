@@ -288,6 +288,25 @@ CREATE TABLE `users` (
   `remember_expires` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    icon VARCHAR(100) DEFAULT 'fa-bell',
+    icon_color VARCHAR(50) DEFAULT 'text-primary',
+    link VARCHAR(255) DEFAULT '#',
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+ALTER TABLE users
+ADD bank_name VARCHAR(100) NULL,
+ADD account_number VARCHAR(50) NULL,
+ADD ifsc_code VARCHAR(20) NULL,
+ADD upi_id VARCHAR(100) NULL;
 --
 -- Dumping data for table `users`
 --
