@@ -64,8 +64,20 @@ $wishlist_items = array_values(
                                     <span class="text-warning small"><i class="fa-solid fa-star"></i> <?php echo $p['rating']; ?></span>
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <a href="cart.php" class="btn btn-maroon btn-sm flex-grow-1 fw-bold"><i class="fa-solid fa-cart-plus me-1"></i> Move to Cart</a>
-                                    <button class="btn btn-light btn-sm border text-danger" title="Remove" onclick="alert('Removed from wishlist');"><i class="fa-solid fa-trash-can"></i></button>
+                                    <a href="cart.php" class="btn btn-maroon btn-sm flex-grow-1 fw-bold">
+                                        <i class="fa-solid fa-cart-plus me-1"></i> Move to Cart
+                                    </a>
+
+                                    <form method="POST" action="wishlist-remove.php">
+                                        <input type="hidden" name="product_id" value="<?php echo $p['id']; ?>">
+                                        <button
+                                            type="submit"
+                                            class="btn btn-light btn-sm border text-danger"
+                                            title="Remove"
+                                        >
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

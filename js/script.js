@@ -131,19 +131,85 @@
 };
 
   // --- Toggle Wishlist Action ---
-  window.toggleWishlist = function (id, name = 'Item') {
-    let wishlist = getWishlist();
-    const idStr = String(id);
-    const index = wishlist.indexOf(idStr);
-    if (index > -1) {
-      wishlist.splice(index, 1);
-      showToast(`Removed <strong>${name}</strong> from your wishlist.`, 'info', 'Wishlist');
-    } else {
-      wishlist.push(idStr);
-      showToast(`Saved <strong>${name}</strong> to your wishlist!`, 'success', 'Saved');
+window.toggleWishlist = async function (id, name = 'Item') {
+
+    if (!window.isUserLoggedIn) {
+        window.location.href = 'login.php';
+        return;
     }
-    saveWishlist(wishlist);
-  };
+
+    try {
+
+        const response = await fetch('customer/wishlist-toggle.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'product_id=' + encodeURIComponent(id)
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+            showToast(result.message || 'Something went wrong.', 'info', 'Wishlist');
+            return;
+        }
+
+        // Update wishlist badge from database count
+        document.querySelectorAll('.wishlist-count-badge').forEach(badge => {
+            badge.textContent = result.count;
+            badge.style.display = result.count > 0 ? 'inline-flex' : 'none';
+        });
+
+        // Update heart icons
+        document.querySelectorAll('[data-wishlist-id="' + id + '"]').forEach(btn => {
+            const icon = btn.querySelector('i');
+
+            if (result.action === 'added') {
+                btn.classList.add('active');
+
+                if (icon) {
+                    icon.className = 'fa-solid fa-heart text-danger';
+                }
+
+            } else {
+                btn.classList.remove('active');
+
+                if (icon) {
+                    icon.className = 'fa-regular fa-heart';
+                }
+            }
+        });
+
+        // Show notification
+        if (result.action === 'added') {
+
+            showToast(
+                `<strong>${name}</strong> saved to your wishlist!`,
+                'success',
+                'Saved'
+            );
+
+        } else {
+
+            showToast(
+                `Removed <strong>${name}</strong> from your wishlist.`,
+                'info',
+                'Wishlist'
+            );
+        }
+
+    } catch (error) {
+
+        console.error('Wishlist Error:', error);
+
+        showToast(
+            'Unable to update wishlist.',
+            'info',
+            'Wishlist'
+        );
+    }
+};
 
   // --- DOM Ready Initializer ---
   document.addEventListener('DOMContentLoaded', function () {
