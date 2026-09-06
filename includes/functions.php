@@ -586,7 +586,7 @@ function get_customer_dashboard_stats(
             COALESCE(
                 SUM(
                     CASE
-                        WHEN payment_status = 'Paid'
+                        WHEN order_status != 'cancelled'
                         THEN total_amount
                         ELSE 0
                     END
@@ -618,7 +618,6 @@ function get_customer_dashboard_stats(
             (float)($stats['total_spent'] ?? 0)
     ];
 }
-
 
 /**
  * Get admin dashboard statistics

@@ -48,10 +48,34 @@ $site_title = $page_title ?? 'My Account - Udyojika';
                     <span>Explore Products</span>
                 </a>
 
+                <?php
+                    $cart_count = 0;
+
+                    if (!empty($customer_id)) {
+                        $stmt = $pdo->prepare("
+                            SELECT COALESCE(SUM(quantity), 0)
+                            FROM cart_items
+                            WHERE customer_id = ?
+                        ");
+
+                        $stmt->execute([$customer_id]);
+                        $cart_count = (int)$stmt->fetchColumn();
+                    }
+                ?>
+
                 <!-- Cart Quick Button -->
-                <a href="cart.php" class="btn btn-light rounded-circle position-relative p-2" style="width: 40px; height: 40px;">
+                <a href="cart.php" class="btn btn-light rounded-circle position-relative p-2"
+                style="width: 40px; height: 40px;">
+
                     <i class="fa-solid fa-cart-shopping text-maroon-800"></i>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">2</span>
+
+                    <?php if ($cart_count > 0): ?>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            style="font-size: 0.65rem;">
+                            <?php echo $cart_count; ?>
+                        </span>
+                    <?php endif; ?>
+
                 </a>
 
                 <!-- Customer Profile Dropdown -->

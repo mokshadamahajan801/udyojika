@@ -240,17 +240,43 @@ $sellers = get_sellers($pdo);
                                     <?php endif; ?>
                                     <small class="text-muted d-block" style="font-size: 0.75rem;">/ <?php echo htmlspecialchars($product['unit']); ?></small>
                                 </div>
-                                <?php if (!empty($_SESSION['user_id'])): ?>
-                                <button type="button"
-                                    class="btn btn-maroon btn-sm px-3"
-                                    onclick="window.addToCart('<?php echo $product['id']; ?>', '<?php echo addslashes($product['name']); ?>', <?php echo $product['price']; ?>, '<?php echo $product['images'][0] ?? ''; ?>', '<?php echo addslashes($product['seller_name']); ?>', '<?php echo addslashes($product['unit']); ?>', 1)">
-                                    <i class="fa-solid fa-plus me-1"></i> Add
+                            <?php if (!empty($_SESSION['user_id'])): ?>
+
+                            <form method="POST" action="customer/add-to-cart.php" class="m-0">
+
+                                <input
+                                    type="hidden"
+                                    name="product_id"
+                                    value="<?php echo (int)$product['id']; ?>"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="quantity"
+                                    value="1"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-maroon btn-sm px-3">
+
+                                    <i class="fa-solid fa-plus me-1"></i>
+                                    Add
+
                                 </button>
-                                <?php else: ?>
-                                <a href="login.php" class="btn btn-maroon btn-sm px-3">
-                                    <i class="fa-solid fa-plus me-1"></i> Add
-                                </a>
-                                <?php endif; ?>
+
+                            </form>
+
+                            <?php else: ?>
+
+                            <a href="login.php" class="btn btn-maroon btn-sm px-3">
+
+                                <i class="fa-solid fa-plus me-1"></i>
+                                Add
+
+                            </a>
+
+                            <?php endif; ?>
                             </div>
                         </div>
                     </div>
