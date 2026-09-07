@@ -20,8 +20,8 @@ if (isset($_SESSION['user_id'])) {
     $role = $_SESSION['role'] ?? '';
 
     if ($role === 'customer') {
-        header("Location: customer/index.php");
-        exit;
+        header("Location: index.php");
+        exit;       
     }
 
     if ($role === 'seller') {
@@ -124,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($user['role'] === 'customer') {
 
-                    header("Location: customer/index.php");
+                    header("Location: index.php");
                     exit;
 
                 } elseif ($user['role'] === 'seller') {

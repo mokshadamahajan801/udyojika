@@ -201,49 +201,50 @@ require_once __DIR__ . '/includes/header.php';
                                 <!-- Product -->
                                 <div class="d-flex align-items-center gap-3">
 
-                                    <?php if (!empty($item['image'])): ?>
+                                    <?php
+                                    $cart_image = $item['image'] ?? '';
 
-                                        <img
-                                            src="<?php echo htmlspecialchars($item['image']); ?>"
-                                            class="rounded-3 border"
-                                            style="width:64px;height:64px;object-fit:cover;"
-                                            alt="<?php echo htmlspecialchars($item['name']); ?>"
-                                        >
+                                    if (!empty($cart_image)) {
 
-                                    <?php else: ?>
+                                        if (
+                                            strpos($cart_image, 'http://') === 0 ||
+                                            strpos($cart_image, 'https://') === 0 ||
+                                            strpos($cart_image, '../') === 0
+                                        ) {
+                                            $cart_image_path = $cart_image;
+                                        } else {
+                                            $cart_image_path = '../' . ltrim($cart_image, '/');
+                                        }
 
-                                        <div
-                                            class="rounded-3 border d-flex align-items-center justify-content-center bg-light"
-                                            style="width:64px;height:64px;"
-                                        >
-                                            <i class="fa-solid fa-image text-muted"></i>
-                                        </div>
+                                    } else {
+                                        $cart_image_path = '../images/default-product.jpg';
+                                    }
+                                    ?>
 
-                                    <?php endif; ?>
+                                    <img
+                                        src="<?php echo htmlspecialchars($cart_image_path); ?>"
+                                        class="rounded-3 border"
+                                        style="width: 64px; height: 64px; object-fit: cover;"
+                                        alt="<?php echo htmlspecialchars($item['name']); ?>"
+                                        onerror="this.src='../images/default-product.jpg';"
+                                    >
 
                                     <div>
-
                                         <strong class="text-dark d-block">
                                             <?php echo htmlspecialchars($item['name']); ?>
                                         </strong>
 
                                         <small class="text-muted d-block">
-
                                             <?php echo htmlspecialchars($item['unit']); ?>
-
                                             &bull;
-
                                             <span class="text-terracotta">
                                                 <?php echo htmlspecialchars($item['seller_name']); ?>
                                             </span>
-
                                         </small>
 
                                         <span class="fw-bold text-maroon-800">
-                                            ₹<?php echo number_format($item['price'], 2); ?>
-                                            each
+                                            ₹<?php echo $item['price']; ?> each
                                         </span>
-
                                     </div>
 
                                 </div>
@@ -342,26 +343,139 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 
 
-    <!-- Order Summary -->
-    <div class="col-lg-4">
+    <!-- Order Summary & Checkout -->
+<div class="col-lg-4">
 
-        <div class="dashboard-card">
+    <div class="dashboard-card">
 
-            <div class="dashboard-card-header">
+        <div class="dashboard-card-header">
+            <h5 class="dashboard-card-title">
+                <i class="fa-solid fa-receipt text-maroon-800"></i>
+                Order Summary
+            </h5>
+        </div>
 
-                <h5 class="dashboard-card-title">
-                    <i class="fa-solid fa-receipt text-maroon-800"></i>
-                    Order Summary
-                </h5>
+        <div class="p-4">
 
-            </div>
+            <!-- Bill Details -->
+            <div class="small text-secondary">
 
-            <div class="p-4 small text-secondary">
-
-                <div class="d-flex justify-content-between py-1">
-
-                    <span>Subtotal:</span>
+                <div class="d-flex justify-content-between py-2">
+                    <span>
+                        Items (<?php echo count($cart_items); ?>)
+                    </span>
 
                     <strong class="text-dark">
                         ₹<?php echo number_format($subtotal, 2); ?>
                     </strong>
+                </div>
+
+
+                <div class="d-flex justify-content-between py-2">
+                    <span>Subtotal</span>
+
+                    <strong class="text-dark">
+                        ₹<?php echo number_format($subtotal, 2); ?>
+                    </strong>
+                </div>
+
+
+                <div class="d-flex justify-content-between py-2">
+                    <span>Discount</span>
+
+                    <?php if ($discount > 0): ?>
+
+                        <strong class="text-success">
+                            -₹<?php echo number_format($discount, 2); ?>
+                        </strong>
+
+                    <?php else: ?>
+
+                        <strong class="text-success">
+                            ₹0.00
+                        </strong>
+
+                    <?php endif; ?>
+
+                </div>
+
+
+                <div class="d-flex justify-content-between py-2">
+                    <span>Shipping Charges</span>
+
+                    <?php if ($shipping == 0): ?>
+
+                        <strong class="text-success">
+                            FREE
+                        </strong>
+
+                    <?php else: ?>
+
+                        <strong class="text-dark">
+                            ₹<?php echo number_format($shipping, 2); ?>
+                        </strong>
+
+                    <?php endif; ?>
+
+                </div>
+
+
+                <!-- Total -->
+                <div class="d-flex justify-content-between align-items-center py-3 border-top mt-2">
+
+                    <strong class="text-maroon-900 fs-5">
+                        Total Payable
+                    </strong>
+
+                    <strong class="text-maroon-900 fs-4">
+                        ₹<?php echo number_format($total, 2); ?>
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <!-- Proceed to Pay -->
+            <?php if (!empty($cart_items)): ?>
+
+                <a
+                    href="checkout.php"
+                    class="btn btn-maroon w-100 py-2 fw-bold shadow-sm"
+                >
+
+                    Proceed to Pay
+
+                    <i class="fa-solid fa-credit-card ms-1"></i>
+
+                </a>
+
+            <?php else: ?>
+
+                <button
+                    type="button"
+                    class="btn btn-secondary w-100 py-2"
+                    disabled
+                >
+
+                    Cart is Empty
+
+                </button>
+
+            <?php endif; ?>
+
+
+            <!-- Continue Shopping -->
+            <a
+                href="../products.php"
+                class="btn btn-outline-maroon w-100 mt-2"
+            >
+
+                Continue Shopping
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
