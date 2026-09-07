@@ -5,6 +5,31 @@ $page_subheader = "Approve, moderate or delete customer feedback for homemade it
 require_once __DIR__ . '/includes/header.php';
 
 $reviews = get_all_reviews();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $review_id = (int)($_POST['review_id'] ?? 0);
+    $action = $_POST['action'] ?? '';
+
+    if ($review_id > 0 && $action === 'approve') {
+
+        $stmt = $pdo->prepare("
+            UPDATE reviews
+            SET status = 'approved'
+            WHERE id = ?
+        ");
+
+        $stmt->execute([$review_id]);
+    }
+    if ($review_id > 0 && $action === 'delete') {
+
+    $stmt = $pdo->prepare("
+        DELETE FROM reviews
+        WHERE id = ?
+    ");
+
+    $stmt->execute([$review_id]);
+}
+}
 ?>
 
 <div class="dashboard-card">
@@ -42,9 +67,19 @@ $reviews = get_all_reviews();
                         <td class="small text-muted"><?php echo date('d M, Y', strtotime($rev['created_at'])); ?></td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <button class="btn btn-light border text-success" title="Approve" onclick="alert('Review approved.');"><i class="fa-solid fa-check"></i></button>
-                                <button class="btn btn-light border text-danger" title="Delete Review" onclick="if(confirm('Delete this review?')) alert('Review removed.');"><i class="fa-solid fa-trash-can"></i></button>
-                            </div>
+<form method="POST" style="display:inline;">
+    <input type="hidden" name="review_id" value="<?php echo $rev['id']; ?>">
+    <input type="hidden" name="action" value="approve">
+    <button type="submit" class="btn btn-light border text-success" title="Approve">
+        <i class="fa-solid fa-check"></i>
+    </button>
+<form method="POST" style="display:inline;" onsubmit="return confirm('Delete this review?');">
+    <input type="hidden" name="review_id" value="<?php echo $rev['id']; ?>">
+    <input type="hidden" name="action" value="delete">
+    <button type="submit" class="btn btn-light border text-danger" title="Delete Review">
+        <i class="fa-solid fa-trash-can"></i>
+    </button>
+</form>                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>

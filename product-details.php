@@ -2,6 +2,9 @@
 
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/functions.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
 
@@ -46,6 +49,97 @@ $stmt->execute([$slug]);
 
 $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['add_to_wishlist'], $_POST['product_id'])
+) {
+    if (empty($_SESSION['user_id'])) {
+        header("Location: login.php");
+        exit;
+    }
+
+    $customer_id = (int)$_SESSION['user_id'];
+    $product_id = (int)$_POST['product_id'];
+
+    $stmt = $pdo->prepare("
+        SELECT id
+        FROM wishlist
+        WHERE customer_id = ? AND product_id = ?
+        LIMIT 1
+    ");
+
+    $stmt->execute([$customer_id, $product_id]);
+
+    $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$existing) {
+        $stmt = $pdo->prepare("
+            INSERT INTO wishlist (customer_id, product_id)
+            VALUES (?, ?)
+        ");
+
+        $stmt->execute([
+            $customer_id,
+            $product_id
+        ]);
+    }
+
+    header("Location: product-details.php?slug=" . urlencode($slug));
+    exit;
+}
+
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['add_to_cart'], $_POST['product_id'])
+) {
+    if (empty($_SESSION['user_id'])) {
+        header("Location: login.php");
+        exit;
+    }
+
+    $customer_id = (int)$_SESSION['user_id'];
+    $product_id = (int)$_POST['product_id'];
+    $quantity = max(1, (int)($_POST['quantity'] ?? 1));
+
+    $stmt = $pdo->prepare("
+        SELECT id
+        FROM cart_items
+        WHERE customer_id = ? AND product_id = ?
+        LIMIT 1
+    ");
+
+    $stmt->execute([$customer_id, $product_id]);
+
+    $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($existing) {
+        $stmt = $pdo->prepare("
+            UPDATE cart_items
+            SET quantity = quantity + ?
+            WHERE id = ? AND customer_id = ?
+        ");
+
+        $stmt->execute([
+            $quantity,
+            $existing['id'],
+            $customer_id
+        ]);
+    } else {
+        $stmt = $pdo->prepare("
+            INSERT INTO cart_items (customer_id, product_id, quantity)
+            VALUES (?, ?, ?)
+        ");
+
+        $stmt->execute([
+            $customer_id,
+            $product_id,
+            $quantity
+        ]);
+    }
+
+header("Location: product-details.php?slug=" . urlencode($slug) . "&cart_added=1");
+exit;
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -105,7 +199,7 @@ if (!empty($product['seller_id'])) {
         'whatsapp' => $product['seller_whatsapp'] ?? ''
     ];
 }
-
+$cart_added = isset($_GET['cart_added']) && $_GET['cart_added'] == '1';
 $page_title = $product['name'];
 
 require_once __DIR__ . '/includes/header.php';
@@ -193,31 +287,116 @@ require_once __DIR__ . '/includes/header.php';
 
             <!-- Quantity and Action Buttons -->
             <div class="bg-light p-4 rounded-4 border mb-4">
-                <div class="row g-3 align-items-center mb-3">
-                    <div class="col-sm-4">
-                        <label class="form-label small fw-bold text-muted mb-1">Select Quantity:</label>
-                        <div class="input-group qty-control-group">
-                            <button class="btn btn-outline-secondary qty-btn-minus" type="button"><i class="fa-solid fa-minus"></i></button>
-                            <input type="number" class="form-control text-center qty-input fw-bold" id="productDetailQty" value="1" min="1" max="<?php echo $product['stock_quantity']; ?>">
-                            <button class="btn btn-outline-secondary qty-btn-plus" type="button"><i class="fa-solid fa-plus"></i></button>
+
+                <form method="POST"
+                    action="product-details.php?slug=<?php echo urlencode($product['slug']); ?>">
+
+                    <input type="hidden" name="add_to_cart" value="1">
+
+                    <input
+                        type="hidden"
+                        name="product_id"
+                        value="<?php echo (int)$product['id']; ?>"
+                    >
+
+                    <div class="row g-3 align-items-center mb-3">
+
+                        <div class="col-sm-4">
+
+                            <label class="form-label small fw-bold text-muted mb-1">
+                                Select Quantity:
+                            </label>
+
+                            <div class="input-group qty-control-group">
+
+                                <button
+                                    class="btn btn-outline-secondary qty-btn-minus"
+                                    type="button">
+                                    <i class="fa-solid fa-minus"></i>
+                                </button>
+
+                                <input
+                                    type="number"
+                                    name="quantity"
+                                    class="form-control text-center qty-input fw-bold"
+                                    id="productDetailQty"
+                                    value="1"
+                                    min="1"
+                                    max="<?php echo (int)$product['stock_quantity']; ?>"
+                                >
+
+                                <button
+                                    class="btn btn-outline-secondary qty-btn-plus"
+                                    type="button">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+
+                            </div>
+
                         </div>
-                    </div>
-                    <div class="col-sm-8 d-flex gap-2 align-self-end">
-                        <button type="button" class="btn btn-maroon w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2" 
-                                onclick="window.addToCart('<?php echo $product['id']; ?>', '<?php echo addslashes($product['name']); ?>', <?php echo $product['price']; ?>, '<?php echo $product['images'][0]; ?>', '<?php echo addslashes($product['seller_name']); ?>', '<?php echo addslashes($product['unit']); ?>', document.getElementById('productDetailQty').value)">
+
+                        <div class="col-sm-8 d-flex gap-2 align-self-end">
+                        <button
+                            type="button"
+                            class="btn btn-maroon w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2"
+                            onclick="window.addToCart(
+                                '<?php echo $product['id']; ?>',
+                                '<?php echo addslashes($product['name']); ?>',
+                                <?php echo $product['price']; ?>,
+                                '<?php echo !empty($product['images'][0]) ? htmlspecialchars($product['images'][0], ENT_QUOTES) : ''; ?>',
+                                '<?php echo addslashes($product['seller_name']); ?>',
+                                '<?php echo addslashes($product['unit']); ?>',
+                                parseInt(document.getElementById('productDetailQty').value) || 1
+                            )">
                             <i class="fa-solid fa-bag-shopping"></i> Add to Cart
                         </button>
-                        <button type="button" class="btn btn-outline-danger p-2 px-3 rounded-pill" onclick="window.toggleWishlist('<?php echo $product['id']; ?>', '<?php echo addslashes($product['name']); ?>')">
-                            <i class="fa-regular fa-heart fs-5"></i>
-                        </button>
-                    </div>
-                </div>
+                </form>
 
-                <div class="d-flex align-items-center gap-2 small text-muted">
-                    <i class="fa-solid fa-clock text-terracotta"></i>
-                    <span><strong>Preparation:</strong> <?php echo htmlspecialchars($product['prep_time']); ?></span>
-                </div>
+
+                <!-- Wishlist -->
+                <form
+                    method="POST"
+                    action="product-details.php?slug=<?php echo urlencode($product['slug']); ?>">
+
+                    <input
+                        type="hidden"
+                        name="add_to_wishlist"
+                        value="1"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="product_id"
+                        value="<?php echo (int)$product['id']; ?>"
+                    >
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-danger p-2 px-3 rounded-pill"
+                        onclick="window.toggleWishlist(
+                            '<?php echo $product['id']; ?>',
+                            '<?php echo addslashes($product['name']); ?>'
+                        )">
+                        <i class="fa-regular fa-heart fs-5"></i>
+                    </button>
+
+                </form>
+
             </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 small text-muted">
+
+            <i class="fa-solid fa-clock text-terracotta"></i>
+
+            <span>
+                <strong>Preparation:</strong>
+                <?php echo htmlspecialchars($product['prep_time']); ?>
+            </span>
+
+        </div>
+
+</div>
 
             <!-- Meet The Maker Card -->
             <div class="p-4 bg-cream-100 rounded-4 border mb-4">

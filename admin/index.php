@@ -1,4 +1,4 @@
-<?php
+-<?php
 
 require_once __DIR__ . '/includes/auth.php';
 
@@ -28,7 +28,7 @@ $categories = get_categories($pdo);
                 <div>
                     <div class="stat-title">Total Users</div>
                     <div class="stat-value"><?php echo $stats['total_users']; ?></div>
-                </div>
+        +        </div>
                 <div class="stat-icon bg-primary-subtle text-primary"><i class="fa-solid fa-users"></i></div>
             </div>
             <div class="stat-trend text-success"><i class="fa-solid fa-arrow-trend-up"></i> +12% this mo</div>

@@ -1,4 +1,7 @@
 <?php
+
+require_once __DIR__ . '/includes/auth.php';
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 $page_title = "My Wishlist - Customer Portal";
@@ -21,10 +24,56 @@ $wishlist_product_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 $wishlist_items = array_values(
     array_filter($products, function ($product) use ($wishlist_product_ids) {
-        return in_array((int)$product['id'], array_map('intval', $wishlist_product_ids), true);
+        return in_array(
+            (int)$product['id'],
+            array_map('intval', $wishlist_product_ids),
+            true
+        );
     })
 );
+foreach ($wishlist_items as &$wishlist_product) {
 
+    $image = '';
+
+    if (isset($wishlist_product['images'])) {
+
+        if (is_array($wishlist_product['images'])) {
+
+            $image = $wishlist_product['images'][0] ?? '';
+
+        } else {
+
+            $decoded_images = json_decode(
+                $wishlist_product['images'],
+                true
+            );
+
+            if (is_array($decoded_images)) {
+                $image = $decoded_images[0] ?? '';
+            }
+        }
+    }
+
+    if ($image !== '') {
+
+        if (
+            strpos($image, 'http://') === 0 ||
+            strpos($image, 'https://') === 0 ||
+            strpos($image, '../') === 0
+        ) {
+            $wishlist_product['display_image'] = $image;
+
+        } else {
+
+            $wishlist_product['display_image'] = '../' . ltrim($image, '/');
+        }
+    } else {
+
+        $wishlist_product['display_image'] = '../images/default-product.jpg';
+    }
+}
+
+unset($wishlist_product);
 ?>
 
 <div class="dashboard-card">
@@ -38,7 +87,13 @@ $wishlist_items = array_values(
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 border rounded-4 overflow-hidden shadow-sm">
                         <div class="position-relative">
-                            <img src="<?php echo $p['images'][0]; ?>" class="w-100" style="height: 180px; object-fit: cover;" alt="">
+                            <img
+                                src="<?php echo htmlspecialchars($p['display_image']); ?>"
+                                class="w-100"
+                                style="height: 180px; object-fit: cover;"
+                                alt="<?php echo htmlspecialchars($p['name']); ?>"
+                                onerror="this.src='../images/default-product.jpg';"
+                            >
                             <span class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark"><?php echo htmlspecialchars($p['badge']); ?></span>
                         </div>
                         <div class="p-3 d-flex flex-column justify-content-between flex-grow-1">
@@ -58,8 +113,32 @@ $wishlist_items = array_values(
                                     <span class="text-warning small"><i class="fa-solid fa-star"></i> <?php echo $p['rating']; ?></span>
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <a href="cart.php" class="btn btn-maroon btn-sm flex-grow-1 fw-bold"><i class="fa-solid fa-cart-plus me-1"></i> Move to Cart</a>
-                                    <button class="btn btn-light btn-sm border text-danger" title="Remove" onclick="alert('Removed from wishlist');"><i class="fa-solid fa-trash-can"></i></button>
+                                    <form method="POST" action="wishlist-to-cart.php" class="flex-grow-1">
+                                        <input
+                                            type="hidden"
+                                            name="product_id"
+                                            value="<?php echo (int)$p['id']; ?>"
+                                        >
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-maroon btn-sm w-100 fw-bold"
+                                        >
+                                            <i class="fa-solid fa-cart-plus me-1"></i>
+                                            Move to Cart
+                                        </button>
+                                    </form>
+
+                                    <form method="POST" action="wishlist-remove.php">
+                                        <input type="hidden" name="product_id" value="<?php echo $p['id']; ?>">
+                                        <button
+                                            type="submit"
+                                            class="btn btn-light btn-sm border text-danger"
+                                            title="Remove"
+                                        >
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

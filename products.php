@@ -1,5 +1,9 @@
 <?php
-$page_title = "Browse All Homemade & Handcrafted Products";
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$page_title = "...";
 require_once __DIR__ . '/includes/header.php';
 
 $all_products = get_all_products($pdo);
@@ -184,9 +188,24 @@ if ($sort === 'price-low') {
                                             <?php echo htmlspecialchars($product['badge']); ?>
                                         </span>
                                     <?php endif; ?>
-                                    <button type="button" class="btn-wishlist" data-wishlist-id="<?php echo $product['id']; ?>" onclick="window.toggleWishlist('<?php echo $product['id']; ?>', '<?php echo addslashes($product['name']); ?>')">
+                                    <?php if (!empty($_SESSION['user_id'])): ?>
+
+                                    <button type="button"
+                                            class="btn-wishlist"
+                                            data-wishlist-id="<?php echo $product['id']; ?>"
+                                            onclick="window.toggleWishlist('<?php echo $product['id']; ?>', '<?php echo addslashes($product['name']); ?>')">
                                         <i class="fa-regular fa-heart"></i>
                                     </button>
+
+                                    <?php else: ?>
+
+                                    <a href="login.php"
+                                    class="btn-wishlist"
+                                    data-wishlist-id="<?php echo $product['id']; ?>">
+                                        <i class="fa-regular fa-heart"></i>
+                                    </a>
+
+                                    <?php endif; ?>
                                     <a href="product-details.php?slug=<?php echo urlencode($product['slug']); ?>">
                                         <?php if (!empty($product['images'][0])): ?>
 
@@ -239,20 +258,30 @@ if ($sort === 'price-low') {
                                                 <span class="text-muted text-decoration-line-through small ms-1">₹<?php echo number_format($product['original_price']); ?></span>
                                             <?php endif; ?>
                                         </div>
+                                        <?php if (!empty($_SESSION['user_id'])): ?>
+
                                         <button
                                             type="button"
                                             class="btn btn-maroon btn-sm px-3"
                                             onclick="window.addToCart(
-        '<?php echo $product['id']; ?>',
-        '<?php echo addslashes($product['name']); ?>',
-        <?php echo $product['price']; ?>,
-        '<?php echo !empty($product['images'][0]) ? htmlspecialchars($product['images'][0], ENT_QUOTES) : ''; ?>',
-        '<?php echo addslashes($product['seller_name']); ?>',
-        '<?php echo addslashes($product['unit']); ?>',
-        1
-    )">
+                                                '<?php echo $product['id']; ?>',
+                                                '<?php echo addslashes($product['name']); ?>',
+                                                <?php echo $product['price']; ?>,
+                                                '<?php echo !empty($product['images'][0]) ? htmlspecialchars($product['images'][0], ENT_QUOTES) : ''; ?>',
+                                                '<?php echo addslashes($product['seller_name']); ?>',
+                                                '<?php echo addslashes($product['unit']); ?>',
+                                                1
+                                            )">
                                             <i class="fa-solid fa-plus me-1"></i> Add
                                         </button>
+
+                                        <?php else: ?>
+
+                                        <a href="login.php" class="btn btn-maroon btn-sm px-3">
+                                            <i class="fa-solid fa-plus me-1"></i> Add
+                                        </a>
+
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>

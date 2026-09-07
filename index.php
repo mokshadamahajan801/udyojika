@@ -1,6 +1,9 @@
 <?php
-$page_title = "Homemade with Love | Empowering Women Home Entrepreneurs";
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
+$page_title = "Homemade with Love | Empowering Women Home Entrepreneurs";
 require_once __DIR__ . '/includes/header.php';
 
 $products = get_all_products($pdo);
@@ -194,6 +197,24 @@ $sellers = get_sellers($pdo);
                                 </span>
                             <?php endif; ?>
                             
+                            <?php if (!empty($_SESSION['user_id'])): ?>
+
+                            <button type="button"
+                                    class="btn-wishlist"
+                                    data-wishlist-id="<?php echo $product['id']; ?>"
+                                    onclick="window.toggleWishlist('<?php echo $product['id']; ?>', '<?php echo addslashes($product['name']); ?>')">
+                                <i class="fa-regular fa-heart"></i>
+                            </button>
+
+                            <?php else: ?>
+
+                            <a href="login.php"
+                            class="btn-wishlist"
+                            data-wishlist-id="<?php echo $product['id']; ?>">
+                                <i class="fa-regular fa-heart"></i>
+                            </a>
+
+                            <?php endif; ?>
                             <a href="product-details.php?slug=<?php echo urlencode($product['slug']); ?>">
                                 <img src="<?php echo htmlspecialchars($product['images'][0]); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
                             </a>
@@ -221,6 +242,43 @@ $sellers = get_sellers($pdo);
                                     <small class="text-muted d-block" style="font-size: 0.75rem;">/ <?php echo htmlspecialchars($product['unit']); ?></small>
                                 </div>
                                 
+                            <?php if (!empty($_SESSION['user_id'])): ?>
+
+                            <form method="POST" action="customer/add-to-cart.php" class="m-0">
+
+                                <input
+                                    type="hidden"
+                                    name="product_id"
+                                    value="<?php echo (int)$product['id']; ?>"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="quantity"
+                                    value="1"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-maroon btn-sm px-3">
+
+                                    <i class="fa-solid fa-plus me-1"></i>
+                                    Add
+
+                                </button>
+
+                            </form>
+
+                            <?php else: ?>
+
+                            <a href="login.php" class="btn btn-maroon btn-sm px-3">
+
+                                <i class="fa-solid fa-plus me-1"></i>
+                                Add
+
+                            </a>
+
+                            <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -326,5 +384,7 @@ $sellers = get_sellers($pdo);
         </div>
     </div>
 </section>
-
+<script>
+    window.isUserLoggedIn = <?php echo !empty($_SESSION['user_id']) ? 'true' : 'false'; ?>;
+</script>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

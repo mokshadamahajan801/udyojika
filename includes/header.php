@@ -102,6 +102,10 @@ $current_u = get_logged_in_user();
         rel="stylesheet"
         href="css/style.css">
 
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        window.isUserLoggedIn = <?php echo !empty($_SESSION['user_id']) ? 'true' : 'false'; ?>;
+    </script>
 </head>
 
 

@@ -190,6 +190,24 @@ if (!empty($product_image)) {
     style="width: 48px; height: 48px; object-fit: cover;"
     alt="<?php echo htmlspecialchars($p['name']); ?>"
 >
+                                    $product_image = '';
+
+                                    if (!empty($p['images']) && is_array($p['images'])) {
+                                        $product_image = $p['images'][0] ?? '';
+                                    }
+
+                                    if (empty($product_image)) {
+                                        $product_image = '../assets/images/product-placeholder.jpg';
+                                    }
+                                    ?>
+
+
+                                    <img
+                                        src="<?php echo htmlspecialchars($product_image); ?>"
+                                        class="rounded-3 border"
+                                        style="width: 48px; height: 48px; object-fit: cover;"
+                                        alt=""
+                                    >
 
 
                                     <div>
@@ -208,6 +226,11 @@ if (!empty($product_image)) {
                                         <small class="text-muted">
 
                                             <?php echo htmlspecialchars($p['unit'] ?? 'piece'); ?>
+                                            <?php
+                                            echo htmlspecialchars(
+                                                $p['unit'] ?? ''
+                                            );
+                                            ?>
 
                                         </small>
 
@@ -277,6 +300,7 @@ if (!empty($product_image)) {
 
                                     <?php
                                     echo (int)($p['stock_quantity'] ?? 0);
+                                    echo (int)($p['stock'] ?? 0);
                                     ?>
 
                                     available

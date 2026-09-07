@@ -243,7 +243,11 @@ try {
 
     <div class="sidebar-footer">
 
-        <div class="user-sidebar-profile mb-2">
+        <!-- CLICKABLE ADMIN PROFILE -->
+
+        <a href="profile.php"
+           class="user-sidebar-profile mb-2 text-decoration-none"
+           style="cursor:pointer;">
 
             <img
                 src="<?php echo htmlspecialchars(
@@ -272,10 +276,12 @@ try {
 
             </div>
 
-        </div>
+        </a>
 
 
-        <a href="logout.php"
+        <!-- Sign Out -->
+
+        <a href="../logout.php"
            class="btn btn-outline-light btn-sm w-100 py-1"
            style="font-size:0.82rem;">
 

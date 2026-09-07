@@ -6,6 +6,7 @@
 |--------------------------------------------------------------------------
 */
 
+
 /**
  * Get all active products
  */
@@ -27,6 +28,10 @@ function get_all_products(PDO $pdo = null)
         FROM products p 
         LEFT JOIN categories c ON p.category_id = c.id 
         LEFT JOIN sellers s ON p.seller_id = s.id 
+        LEFT JOIN categories c 
+            ON p.category_id = c.id 
+        LEFT JOIN sellers s 
+            ON p.seller_id = s.id 
         WHERE p.status = 'active' 
         ORDER BY p.created_at DESC
     ";
@@ -61,6 +66,10 @@ function get_all_products(PDO $pdo = null)
         if (!empty($raw_images)) {
 
             $decoded_images = json_decode($raw_images, true);
+            $decoded_images = json_decode(
+                $raw_images,
+                true
+            );
 
             $product['images'] =
                 is_array($decoded_images)
@@ -166,6 +175,7 @@ function get_sellers(PDO $pdo)
 | Authentication Functions
 |--------------------------------------------------------------------------
 */
+
 
 /**
  * Login user
@@ -367,6 +377,7 @@ function get_logged_in_user()
 
     $stmt->execute([
         $_SESSION['customer_id']
+        $_SESSION['user_id']
     ]);
 
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -440,8 +451,10 @@ function get_product_by_slug($slug, PDO $pdo)
             c.slug AS category_slug,
             b.business_name AS seller_name
         FROM products p
-        LEFT JOIN categories c ON p.category_id = c.id
-        LEFT JOIN sellers b ON p.seller_id = b.id
+        LEFT JOIN categories c 
+            ON p.category_id = c.id
+        LEFT JOIN sellers b 
+            ON p.seller_id = b.id
         WHERE p.slug = ?
         LIMIT 1
     ");
@@ -595,7 +608,7 @@ function get_customer_dashboard_stats(
             COALESCE(
                 SUM(
                     CASE
-                        WHEN payment_status = 'Paid'
+                        WHEN order_status != 'cancelled'
                         THEN total_amount
                         ELSE 0
                     END
@@ -790,10 +803,15 @@ function get_all_reviews()
             SELECT 
                 r.*,
                 u.name AS customer_name,
-                p.name AS product_name
+                p.name AS product_name,
+                s.business_name AS seller_name
             FROM reviews r
-            LEFT JOIN users u ON r.user_id = u.id
-            LEFT JOIN products p ON r.product_id = p.id
+            LEFT JOIN users u 
+                ON r.user_id = u.id
+            LEFT JOIN products p 
+                ON r.product_id = p.id
+            LEFT JOIN sellers s 
+                ON p.seller_id = s.id
             ORDER BY r.id DESC
         ");
 
@@ -949,6 +967,7 @@ function get_seller_dashboard_stats($seller_id)
 
         INNER JOIN orders o
         ON o.id = oi.order_id
+            ON o.id = oi.order_id
     ");
 
     $stmt->execute([
@@ -982,6 +1001,7 @@ function get_seller_dashboard_stats($seller_id)
         FROM reviews r
         INNER JOIN products p
         ON p.id = r.product_id
+            ON p.id = r.product_id
         WHERE p.seller_id = ?
     ");
 
@@ -1063,4 +1083,80 @@ function get_order_by_id(PDO $pdo, $order_id)
 
     return $order;
 }
+
+
+/**
+ * Get cart items for a customer
+ */
+function get_customer_cart(PDO $pdo, $customer_id)
+{
+    $stmt = $pdo->prepare("
+        SELECT
+            ci.id AS cart_id,
+            ci.customer_id,
+            ci.product_id,
+            ci.quantity,
+            p.name,
+            p.price,
+            p.images,
+            p.unit,
+            s.id AS seller_id,
+            s.business_name AS seller_name
+        FROM cart_items ci
+        INNER JOIN products p
+            ON p.id = ci.product_id
+        INNER JOIN sellers s
+            ON s.id = p.seller_id
+        WHERE ci.customer_id = ?
+        ORDER BY ci.created_at DESC
+    ");
+
+    $stmt->execute([
+        $customer_id
+    ]);
+
+    $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($items as &$item) {
+
+        $images = json_decode(
+            $item['images'] ?? '',
+            true
+        );
+
+        if (is_array($images) && !empty($images)) {
+            $item['image'] = $images[0];
+        } else {
+            $item['image'] = '';
+        }
+
+        $item['qty'] =
+            (int)$item['quantity'];
+
+        $item['price'] =
+            (float)$item['price'];
+    }
+
+    unset($item);
+
+    return $items;
+}
+/**
+ * Get system settings
+ */
+function get_system_settings()
+{
+    global $pdo;
+
+    return [
+        'site_name' => 'Udyojika',
+        'support_email' => '',
+        'support_phone' => '',
+        'free_shipping_threshold' => 0,
+        'standard_shipping_rate' => 0,
+        'commission_rate' => 0,
+        'seller_verification' => 'manual'
+    ];
+}
+
 ?>

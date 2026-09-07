@@ -1,10 +1,53 @@
 <?php
 $page_title = "Contact Us & Maker Support - Udyojika";
+
+require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/header.php';
 
 $feedback_msg = '';
+$error_msg = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $feedback_msg = "Thank you for reaching out! Your message has been received and our team will respond within 4 business hours.";
+
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $subject = trim($_POST['topic'] ?? '');
+    $message = trim($_POST['message'] ?? '');
+
+    if ($name === '' || $email === '' || $subject === '' || $message === '') {
+
+        $error_msg = "Please fill in all required fields.";
+
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
+        $error_msg = "Please enter a valid email address.";
+
+    } else {
+
+        try {
+
+            $stmt = $pdo->prepare("
+                INSERT INTO contact_messages
+                (name, email, phone, subject, message, status)
+                VALUES (?, ?, ?, ?, ?, 'new')
+            ");
+
+            $stmt->execute([
+                $name,
+                $email,
+                $phone ?: null,
+                $subject,
+                $message
+            ]);
+
+            $feedback_msg = "Thank you for reaching out! Your message has been received and our team will respond within 4 business hours.";
+
+        } catch (PDOException $e) {
+
+            $error_msg = "Sorry, your message could not be sent. Please try again.";
+        }
+    }
 }
 ?>
 
@@ -29,6 +72,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h4 class="font-serif fw-bold text-maroon-900 mb-2">Send Us a Message</h4>
                 <p class="text-muted small mb-4">Whether you are a customer inquiring about an order or a home maker wanting to sell with us, reach out below:</p>
 
+                <?php if (!empty($error_msg)): ?>
+    <div class="alert alert-danger mb-4">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>
+        <?php echo htmlspecialchars($error_msg); ?>
+    </div>
+<?php endif; ?>
                 <?php if (!empty($feedback_msg)): ?>
                     <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
                         <i class="fa-solid fa-circle-check fs-4"></i>

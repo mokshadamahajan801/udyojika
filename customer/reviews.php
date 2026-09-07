@@ -5,7 +5,7 @@ $page_subheader = "Ratings and appreciations you have shared with women makers";
 require_once __DIR__ . '/includes/header.php';
 
 $all_reviews = get_all_reviews();
-$my_reviews = array_filter($all_reviews, fn($r) => (int)$r['customer_id'] === (int)$customer_id);
+$my_reviews = array_filter($all_reviews, fn($r) => (int)$r['user_id'] === (int)$customer_id);
 ?>
 
 <div class="dashboard-card">

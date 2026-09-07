@@ -4,28 +4,23 @@ $page_header = "Public Contact Form Inquiries";
 $page_subheader = "Inquiries received via the public Contact Us and Maker Support channels";
 require_once __DIR__ . '/includes/header.php';
 
-$messages = [
-    [
-        'id' => 1,
-        'name' => 'Meenakshi Iyer',
-        'email' => 'meenakshi@gmail.com',
-        'phone' => '+91 98450 11223',
-        'topic' => 'Corporate Gifting / Bulk Wedding Orders',
-        'message' => 'We are organizing our daughter\'s wedding in Bangalore and would like 200 boxes of handmade traditional Mysore Pak & Terracotta Diyas. Please connect us with verified makers.',
-        'status' => 'new',
-        'created_at' => '2024-08-24 12:45:00'
-    ],
-    [
-        'id' => 2,
-        'name' => 'Rajesh Sharma',
-        'email' => 'rajesh.sharma@logistics.in',
-        'phone' => '+91 98220 88990',
-        'topic' => 'Seller Onboarding',
-        'message' => 'My mother makes authentic Rajasthani Sangri pickle and papad. How can we register her kitchen on Udyojika?',
-        'status' => 'replied',
-        'created_at' => '2024-08-20 10:15:00'
-    ]
-];
+require_once __DIR__ . '/../includes/db.php';
+
+$stmt = $pdo->query("
+    SELECT 
+        id,
+        name,
+        email,
+        phone,
+        subject AS topic,
+        message,
+        status,
+        created_at
+    FROM contact_messages
+    ORDER BY created_at DESC
+");
+
+$messages = $stmt->fetchAll();
 ?>
 
 <div class="dashboard-card">
@@ -64,8 +59,11 @@ $messages = [
                         </td>
                         <td class="small text-muted"><?php echo date('d M, Y', strtotime($m['created_at'])); ?></td>
                         <td>
-                            <button class="btn btn-sm btn-outline-maroon" onclick="alert('Replying to <?php echo htmlspecialchars($m['email']); ?>');"><i class="fa-solid fa-reply me-1"></i> Reply</button>
-                        </td>
+                           <button type="button"
+        class="btn btn-sm btn-outline-maroon"
+        onclick="window.location.href='mailto:<?php echo htmlspecialchars($m['email']); ?>';">
+    <i class="fa-solid fa-reply me-1"></i> Reply
+</button>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

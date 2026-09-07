@@ -4,7 +4,7 @@ $page_header = "Custom Inquiries & Bulk Requests";
 $page_subheader = "Track your conversations and special requests sent to home makers";
 require_once __DIR__ . '/includes/header.php';
 
-$all_enquiries = get_all_enquiries();
+$all_enquiries = get_all_enquiries($pdo);
 $my_enquiries = array_filter($all_enquiries, fn($e) => (int)$e['sender_id'] === (int)$customer_id);
 ?>
 
