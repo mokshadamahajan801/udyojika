@@ -479,3 +479,22 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 
 </div>
+<script>
+
+function updateCartQuantity(cartId, quantity) {
+
+    if (quantity < 1) {
+        quantity = 1;
+    }
+
+    window.location.href =
+        "cart.php?update_id=" +
+        cartId +
+        "&quantity=" +
+        quantity;
+}
+
+</script>
+
+
+<?php require_once __DIR__ . '/includes/footer.php'; ?>
