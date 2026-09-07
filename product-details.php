@@ -222,8 +222,30 @@ require_once __DIR__ . '/includes/header.php';
             <!-- Meet The Maker Card -->
             <div class="p-4 bg-cream-100 rounded-4 border mb-4">
                 <div class="d-flex align-items-center gap-3 mb-3">
-                    <img src="<?php echo htmlspecialchars($seller['avatar']); ?>" class="rounded-circle shadow-sm" style="width: 56px; height: 56px; object-fit: cover;" alt="<?php echo htmlspecialchars($seller['owner_name']); ?>">
-                    <div>
+<?php
+$shop_image = $seller['banner_image'] ?? '';
+
+if (!empty($shop_image)) {
+    if (
+        strpos($shop_image, 'http://') !== 0 &&
+        strpos($shop_image, 'https://') !== 0 &&
+        strpos($shop_image, '../') !== 0
+    ) {
+        $shop_image = '../' . ltrim($shop_image, '/');
+    }
+} else {
+    $shop_image = '../assets/images/product-placeholder.jpg';
+}
+?>
+
+<img 
+    src="<?php echo htmlspecialchars($shop_image); ?>" 
+    class="rounded-circle shadow-sm" 
+    style="width: 56px; height: 56px; object-fit: cover;" 
+    alt="<?php echo htmlspecialchars($seller['owner_name']); ?>"
+>
+
+<div>
                         <span class="badge bg-success-subtle text-success border border-success mb-1 small"><i class="fa-solid fa-shield-halved me-1"></i> Verified Maker</span>
                         <h5 class="fw-bold mb-0 text-maroon-900"><?php echo htmlspecialchars($seller['business_name']); ?></h5>
                         <small class="text-muted">By <strong><?php echo htmlspecialchars($seller['owner_name']); ?></strong> &bull; <?php echo htmlspecialchars($seller['location']); ?></small>

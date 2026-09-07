@@ -1,42 +1,37 @@
 <?php
 
 require_once __DIR__ . '/includes/db.php';
-
 require_once __DIR__ . '/includes/functions.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
 $page_title = "Sign In";
+
+
 
 /*
 |--------------------------------------------------------------------------
-| If User Is Already Logged In
+| If Customer Is Already Logged In
+|--------------------------------------------------------------------------
+|
+| IMPORTANT:
+| We only check customer_id here.
+| Admin session has NO effect on this page.
 |--------------------------------------------------------------------------
 */
 
-if (isset($_SESSION['user_id'])) {
+if (isset($_SESSION['customer_id'])) {
 
-    $role = $_SESSION['role'] ?? '';
-
-    if ($role === 'customer') {
-        header("Location: customer/index.php");
-        exit;
-    }
-
-    if ($role === 'seller') {
-        header("Location: seller/index.php");
-        exit;
-    }
-
-    if ($role === 'admin') {
-        header("Location: admin/index.php");
-        exit;
-    }
+    header("Location: index.php");
+    exit;
 }
 
 
+
 $error = '';
+
 
 
 /*
@@ -49,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
+
 
 
     /*
@@ -82,6 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
+
         /*
         |--------------------------------------------------------------------------
         | Verify Login
@@ -101,46 +98,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $error = "Your account is not active.";
 
-            } else {
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | ONLY CUSTOMER LOGIN
+            |--------------------------------------------------------------------------
+            */
+
+            elseif ($user['role'] !== 'customer') {
+
+                $error = "This login is only for customers.";
+
+            }
+
+            else {
 
 
                 /*
                 |--------------------------------------------------------------------------
-                | Create Session
+                | Regenerate Session ID
                 |--------------------------------------------------------------------------
                 */
 
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['name'] = $user['name'];
-                $_SESSION['email'] = $user['email'];
-                $_SESSION['role'] = $user['role'];
+                session_regenerate_id(true);
+
 
 
                 /*
                 |--------------------------------------------------------------------------
-                | Redirect According To Role
+                | Create CUSTOMER Session
+                |--------------------------------------------------------------------------
+                |
+                | IMPORTANT:
+                | We DO NOT use:
+                | $_SESSION['user_id']
+                | $_SESSION['role']
+                |
+                | Customer has its own session keys.
                 |--------------------------------------------------------------------------
                 */
 
-                if ($user['role'] === 'customer') {
+                $_SESSION['customer_id'] = (int) $user['id'];
+                $_SESSION['customer_name'] = $user['name'] ?? '';
+                $_SESSION['customer_email'] = $user['email'] ?? '';
+                $_SESSION['customer_user'] = $user;
 
-                    header("Location: customer/index.php");
-                    exit;
 
-                } elseif ($user['role'] === 'seller') {
 
-                    header("Location: seller/index.php");
-                    exit;
+                /*
+                |--------------------------------------------------------------------------
+                | Customer → Website Home Page
+                |--------------------------------------------------------------------------
+                */
 
-                } elseif ($user['role'] === 'admin') {
-
-                    header("Location: admin/index.php");
-                    exit;
-
-                } else {
-
-                    $error = "Invalid user role.";
-                }
+                header("Location: index.php");
+                exit;
             }
 
         } else {
@@ -149,9 +162,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+
+
 require_once __DIR__ . '/includes/auth-header.php';
 
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -160,10 +177,14 @@ require_once __DIR__ . '/includes/auth-header.php';
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
     <title>Login - Udyojika</title>
+
+
+    <!-- Bootstrap 5.3.3 -->
 
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
@@ -171,7 +192,9 @@ require_once __DIR__ . '/includes/auth-header.php';
 
 </head>
 
+
 <body>
+
 
 <div class="container mt-5">
 
@@ -183,19 +206,28 @@ require_once __DIR__ . '/includes/auth-header.php';
 
                 <div class="card-body p-4">
 
+
+                    <!-- Title -->
+
                     <h2 class="text-center mb-4">
                         Welcome Back
                     </h2>
 
 
+                    <!-- Error Message -->
+
                     <?php if ($error): ?>
 
                         <div class="alert alert-danger">
+
                             <?= htmlspecialchars($error) ?>
+
                         </div>
 
                     <?php endif; ?>
 
+
+                    <!-- Login Form -->
 
                     <form method="POST">
 
@@ -212,8 +244,8 @@ require_once __DIR__ . '/includes/auth-header.php';
                                 type="email"
                                 name="email"
                                 class="form-control"
-                                required
-                            >
+                                value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
+                                required>
 
                         </div>
 
@@ -230,8 +262,7 @@ require_once __DIR__ . '/includes/auth-header.php';
                                 type="password"
                                 name="password"
                                 class="form-control"
-                                required
-                            >
+                                required>
 
                         </div>
 
@@ -245,6 +276,7 @@ require_once __DIR__ . '/includes/auth-header.php';
                             Sign In
 
                         </button>
+
 
                     </form>
 
@@ -261,6 +293,7 @@ require_once __DIR__ . '/includes/auth-header.php';
 
                     </div>
 
+
                 </div>
 
             </div>
@@ -270,6 +303,7 @@ require_once __DIR__ . '/includes/auth-header.php';
     </div>
 
 </div>
+
 
 </body>
 

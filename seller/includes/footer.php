@@ -11,10 +11,39 @@
         </footer>
     </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const button = document.getElementById("notificationButton");
+    const menu = document.getElementById("notificationMenu");
+
+    if (!button || !menu) return;
+
+    button.addEventListener("click", function (e) {
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        menu.classList.toggle("show");
+
+    });
+
+    document.addEventListener("click", function (e) {
+
+        if (!button.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.remove("show");
+        }
+
+    });
+
+});
+</script>
 
 <!-- Bootstrap 5 JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <!-- Dashboard Script -->
 <script src="../js/dashboard.js"></script>
+
 </body>
 </html>

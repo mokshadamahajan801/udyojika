@@ -212,36 +212,76 @@ h1, h2, h3, h4, .font-serif {
   margin-bottom: 1rem;
 }
 
-/* Category Cards */
+/* ================================
+   CATEGORY CARDS
+================================ */
+
 .category-card {
-  background: #fff;
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: var(--shadow-soft);
-  transition: all 0.3s ease;
-  text-decoration: none;
-  color: inherit;
-  display: block;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: var(--shadow-soft);
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    text-align: center;
+    transition: all 0.3s ease;
 }
+
+/* Card Hover */
 .category-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-hover);
-  color: inherit;
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-hover);
+    color: inherit;
 }
+
+/* ================================
+   CIRCLE IMAGE
+================================ */
+
 .category-card .cat-img-wrapper {
-  height: 160px;
-  overflow: hidden;
-  position: relative;
+    width: 140px !important;
+    height: 140px !important;
+
+    margin-left: auto;
+    margin-right: auto;
+
+    overflow: hidden;
+    position: relative;
+
+    border-radius: 50% !important;
+
+    border: 4px solid #fff;
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+
+    transition: all 0.4s ease;
 }
+
+/* Image */
 .category-card .cat-img-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
+    width: 100% !important;
+    height: 100% !important;
+
+    object-fit: cover;
+
+    display: block;
+
+    transition: transform 0.5s ease;
 }
+
+/* ================================
+   HOVER EFFECT
+================================ */
+
+.category-card:hover .cat-img-wrapper {
+    transform: scale(1.08);
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.22);
+}
+
 .category-card:hover .cat-img-wrapper img {
-  transform: scale(1.08);
+    transform: scale(1.12);
 }
 
 /* Product Cards */
@@ -425,4 +465,41 @@ footer a:hover {
     .about-hero-image {
         height: 300px;
     }
+}
+
+/* ===== CATEGORY CIRCLE ===== */
+
+.category-card .cat-img-wrapper {
+    width: 140px !important;
+    height: 140px !important;
+    margin: 0 auto 15px !important;
+    padding: 0 !important;
+
+    border-radius: 50% !important;
+    overflow: hidden !important;
+
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.category-card .cat-img-wrapper img {
+    width: 100% !important;
+    height: 100% !important;
+
+    display: block !important;
+    object-fit: cover !important;
+
+    transition: transform 0.4s ease;
+}
+
+/* Hover */
+.category-card:hover .cat-img-wrapper {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.22);
+}
+
+.category-card:hover .cat-img-wrapper img {
+    transform: scale(1.1);
 }

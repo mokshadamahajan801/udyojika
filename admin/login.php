@@ -1,4 +1,3 @@
-
 <?php
 
 /**
@@ -20,11 +19,7 @@ $error_message = '';
 |--------------------------------------------------------------------------
 */
 
-if (
-    isset($_SESSION['user_id']) &&
-    isset($_SESSION['user_role']) &&
-    $_SESSION['user_role'] === 'admin'
-) {
+if (isset($_SESSION['admin_id'])) {
     header("Location: index.php");
     exit;
 }
@@ -68,12 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             /*
             |--------------------------------------------------------------------------
-            | IMPORTANT:
             | Only ADMIN is allowed here
             |--------------------------------------------------------------------------
             */
 
-            if ($user['role'] !== 'admin') {
+            if (($user['role'] ?? '') !== 'admin') {
 
                 $error_message =
                     'Access denied. This login is only for administrators.';
@@ -90,17 +84,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 /*
                 |--------------------------------------------------------------------------
-                | Store Admin Session
+                | Store ADMIN Session Separately
+                |
+                | IMPORTANT:
+                | We are NOT using:
+                | $_SESSION['user_id']
+                | $_SESSION['user_role']
+                |
+                | These are reserved for the old shared session.
                 |--------------------------------------------------------------------------
                 */
 
-                $_SESSION['user_id'] = (int) $user['id'];
-                $_SESSION['user_role'] = 'admin';
-                $_SESSION['user'] = $user;
+                $_SESSION['admin_id'] = (int) $user['id'];
+                $_SESSION['admin_name'] = $user['name'] ?? '';
+                $_SESSION['admin_email'] = $user['email'] ?? '';
+                $_SESSION['admin_user'] = $user;
 
                 /*
                 |--------------------------------------------------------------------------
-                | Redirect to Admin Dashboard
+                | Redirect to Admin Index
                 |--------------------------------------------------------------------------
                 */
 
@@ -174,12 +176,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 25px;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Main Container
-        |--------------------------------------------------------------------------
-        */
-
         .admin-login-wrapper {
             width: 100%;
             max-width: 1050px;
@@ -197,12 +193,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             border: 1px solid rgba(74, 44, 22, 0.08);
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Left Panel
-        |--------------------------------------------------------------------------
-        */
 
         .admin-brand-panel {
 
@@ -267,12 +257,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             bottom: -220px;
             right: -160px;
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Admin Icon
-        |--------------------------------------------------------------------------
-        */
 
         .admin-icon {
 
@@ -351,12 +335,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             z-index: 2;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Right Login Panel
-        |--------------------------------------------------------------------------
-        */
-
         .admin-form-panel {
 
             min-height: 650px;
@@ -421,12 +399,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 30px;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Form
-        |--------------------------------------------------------------------------
-        */
-
         .form-label {
 
             font-size: 14px;
@@ -475,12 +447,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 0 0 0 0.2rem rgba(143, 41, 56, 0.12);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Login Button
-        |--------------------------------------------------------------------------
-        */
-
         .btn-admin-login {
 
             width: 100%;
@@ -514,24 +480,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 0 8px 20px rgba(109, 31, 43, 0.20);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Error
-        |--------------------------------------------------------------------------
-        */
-
         .alert {
 
             border-radius: 10px;
 
             font-size: 13px;
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Footer Text
-        |--------------------------------------------------------------------------
-        */
 
         .admin-footer {
 
@@ -571,12 +525,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             text-decoration: underline;
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Mobile
-        |--------------------------------------------------------------------------
-        */
 
         @media (max-width: 991px) {
 
@@ -650,9 +598,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="row g-0">
 
-            <!-- =========================================================
-                 LEFT SIDE
-            ========================================================== -->
+            <!-- LEFT SIDE -->
 
             <div class="col-lg-5">
 
@@ -687,9 +633,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
 
-            <!-- =========================================================
-                 RIGHT SIDE
-            ========================================================== -->
+            <!-- RIGHT SIDE -->
 
             <div class="col-lg-7">
 
@@ -738,7 +682,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             action="login.php"
                             method="POST"
                             autocomplete="off">
-
 
                             <!-- EMAIL -->
 
@@ -879,12 +822,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 <script>
-
-/*
-|--------------------------------------------------------------------------
-| Show / Hide Password
-|--------------------------------------------------------------------------
-*/
 
 const togglePassword =
     document.getElementById("togglePassword");

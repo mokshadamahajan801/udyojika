@@ -241,6 +241,36 @@ CREATE TABLE `sellers` (
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE business (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    seller_id INT NOT NULL,
+
+    business_logo VARCHAR(255),
+    business_name VARCHAR(150) NOT NULL,
+    business_category VARCHAR(100),
+    short_bio VARCHAR(300),
+    business_description TEXT,
+
+    owner_name VARCHAR(100),
+    phone VARCHAR(20),
+    email VARCHAR(150),
+
+    address TEXT,
+    city VARCHAR(100),
+    state VARCHAR(100),
+    pincode VARCHAR(10),
+
+    established_year YEAR,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (seller_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
 --
 -- Dumping data for table `sellers`
 --
@@ -288,6 +318,25 @@ CREATE TABLE `users` (
   `remember_expires` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    icon VARCHAR(100) DEFAULT 'fa-bell',
+    icon_color VARCHAR(50) DEFAULT 'text-primary',
+    link VARCHAR(255) DEFAULT '#',
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+ALTER TABLE users
+ADD bank_name VARCHAR(100) NULL,
+ADD account_number VARCHAR(50) NULL,
+ADD ifsc_code VARCHAR(20) NULL,
+ADD upi_id VARCHAR(100) NULL;
 --
 -- Dumping data for table `users`
 --

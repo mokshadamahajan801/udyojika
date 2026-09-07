@@ -4,7 +4,8 @@ $page_header = "Custom & Bulk Orders";
 $page_subheader = "Respond to personalized requests and festive gift hamper inquiries from buyers";
 require_once __DIR__ . '/includes/header.php';
 
-$all_enquiries = get_all_enquiries();
+$all_enquiries = get_all_enquiries($pdo);
+
 $my_enquiries = array_filter($all_enquiries, fn($e) => (int)$e['seller_id'] === (int)$seller_id);
 $reply_msg = '';
 

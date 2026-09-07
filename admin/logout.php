@@ -4,12 +4,25 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Remove all session data
-$_SESSION = [];
+/*
+|--------------------------------------------------------------------------
+| Logout ONLY ADMIN
+|--------------------------------------------------------------------------
+|
+| Customer session ला touch करायचे नाही.
+|--------------------------------------------------------------------------
+*/
 
-// Destroy the session
-session_destroy();
+unset($_SESSION['admin_id']);
+unset($_SESSION['admin_name']);
+unset($_SESSION['admin_email']);
+unset($_SESSION['admin_user']);
 
-// Redirect to login page
-header("Location: login.php");
+/*
+|--------------------------------------------------------------------------
+| Redirect to Admin Login
+|--------------------------------------------------------------------------
+*/
+
+header("Location: /udyojika/admin/login.php");
 exit;

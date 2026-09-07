@@ -78,8 +78,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </li>
         <li>
             <a href="profile.php" class="nav-link <?php echo $current_page === 'profile.php' ? 'active' : ''; ?>">
-                <i class="fa-solid fa-user-gear"></i>
-                <span>Profile & Settings</span>
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
+        </li>
+        <li>
+            <a href="settings.php" class="nav-link <?php echo $current_page === 'settings.php' ? 'active' : ''; ?>">
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
             </a>
         </li>
     </ul>

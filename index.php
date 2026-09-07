@@ -160,7 +160,7 @@ $sellers = get_sellers($pdo);
             <?php foreach ($categories as $cat): ?>
                 <div class="col-6 col-md-4 col-lg-2">
                     <a href="products.php?category=<?php echo urlencode($cat['slug']); ?>" class="category-card text-center p-3 h-100">
-                        <div class="cat-img-wrapper rounded-3 mb-3">
+                        <div class="cat-img-wrapper mb-3">
                             <img src="<?php echo htmlspecialchars($cat['image']); ?>" alt="<?php echo htmlspecialchars($cat['name']); ?>">
                         </div>
                         <h6 class="fw-bold mb-1 text-dark"><?php echo htmlspecialchars($cat['name']); ?></h6>
@@ -193,9 +193,7 @@ $sellers = get_sellers($pdo);
                                     <?php echo htmlspecialchars($product['badge']); ?>
                                 </span>
                             <?php endif; ?>
-                            <button type="button" class="btn-wishlist" data-wishlist-id="<?php echo $product['id']; ?>" onclick="window.toggleWishlist('<?php echo $product['id']; ?>', '<?php echo addslashes($product['name']); ?>')">
-                                <i class="fa-regular fa-heart"></i>
-                            </button>
+                            
                             <a href="product-details.php?slug=<?php echo urlencode($product['slug']); ?>">
                                 <img src="<?php echo htmlspecialchars($product['images'][0]); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
                             </a>
@@ -222,9 +220,7 @@ $sellers = get_sellers($pdo);
                                     <?php endif; ?>
                                     <small class="text-muted d-block" style="font-size: 0.75rem;">/ <?php echo htmlspecialchars($product['unit']); ?></small>
                                 </div>
-                                <button type="button" class="btn btn-maroon btn-sm px-3" onclick="window.addToCart('<?php echo $product['id']; ?>', '<?php echo addslashes($product['name']); ?>', <?php echo $product['price']; ?>, '<?php echo $product['images'][0]; ?>', '<?php echo addslashes($product['seller_name']); ?>', '<?php echo addslashes($product['unit']); ?>', 1)">
-                                    <i class="fa-solid fa-plus me-1"></i> Add
-                                </button>
+                                
                             </div>
                         </div>
                     </div>
@@ -247,9 +243,13 @@ $sellers = get_sellers($pdo);
             <?php foreach ($sellers as $seller): ?>
                 <div class="col-12 col-md-6 col-lg-3">
                     <div class="seller-card h-100 d-flex flex-column">
-                        <div class="seller-banner" style="background-image: url('<?php echo htmlspecialchars($seller['banner_image']); ?>');"></div>
+                        <div class="seller-banner"
+     style="background-image: url('<?php echo !empty($seller['business_logo']) ? htmlspecialchars($seller['business_logo']) : 'assets/images/default-banner.jpg'; ?>');">
+</div>
                         <div class="seller-avatar-wrapper d-flex justify-content-between align-items-end">
-                            <img src="<?php echo htmlspecialchars($seller['avatar']); ?>" alt="<?php echo htmlspecialchars($seller['owner_name']); ?>" class="seller-avatar">
+                            <img src="<?php echo !empty($seller['business_logo']) ? htmlspecialchars($seller['business_logo']) : 'assets/images/default-profile.png'; ?>"
+     alt="<?php echo htmlspecialchars($seller['owner_name']); ?>"
+     class="seller-avatar">
                             <span class="badge bg-success-subtle text-success border border-success mb-2 px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i> Verified</span>
                         </div>
                         <div class="p-3 pt-2 d-flex flex-column flex-grow-1">
@@ -257,7 +257,7 @@ $sellers = get_sellers($pdo);
                             <small class="text-muted mb-2">Founded by <strong><?php echo htmlspecialchars($seller['owner_name']); ?></strong></small>
                             <p class="small text-secondary mb-3 text-truncate-3"><?php echo htmlspecialchars($seller['short_bio']); ?></p>
                             <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
-                                <span class="small text-muted"><i class="fa-solid fa-location-dot me-1 text-danger"></i> <?php echo htmlspecialchars($seller['location']); ?></span>
+                                <span class="small text-muted"><i class="fa-solid fa-location-dot me-1 text-danger"></i> <?php echo htmlspecialchars($seller['city'] . ', ' . $seller['state']); ?></span>
                                 <a href="business-details.php?id=<?php echo $seller['id']; ?>" class="btn btn-outline-maroon btn-sm">Visit Store</a>
                             </div>
                         </div>

@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/../../includes/db.php';
 require_once __DIR__ . '/../../includes/functions.php';
 
-$current_user = get_logged_in_user();
+$current_user = $_SESSION['admin_user'] ?? null;
 
 ?>
 <!DOCTYPE html>
@@ -84,7 +84,7 @@ $current_user = get_logged_in_user();
                         <li><span class="dropdown-item-text small text-muted">Signed in as <strong>Admin</strong></span></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item small" href="settings.php"><i class="fa-solid fa-gear me-2"></i> Settings</a></li>
-                        <li><a class="dropdown-item small text-danger" href="../logout.php"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Sign Out</a></li>
+                        <li><a class="dropdown-item small text-danger" href="logout.php"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Sign Out</a></li>
                     </ul>
                 </div>
             </div>

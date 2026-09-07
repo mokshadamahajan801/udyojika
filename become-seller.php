@@ -17,17 +17,16 @@ $page_title = "Become a Seller | Udyojika";
 $success_message = '';
 $error_message = '';
 
-
 // =====================================================
-// LOGIN CHECK
+// CUSTOMER LOGIN CHECK
 // =====================================================
 
-if (empty($_SESSION['user_id'])) {
+if (empty($_SESSION['customer_id'])) {
     header('Location: login.php?msg=auth_required');
     exit;
 }
 
-$current_user_id = (int) $_SESSION['user_id'];
+$current_user_id = (int) $_SESSION['customer_id'];
 
 
 // =====================================================
@@ -48,21 +47,6 @@ $current_user = $user_stmt->fetch(PDO::FETCH_ASSOC);
 if (!$current_user) {
     session_destroy();
     header('Location: login.php?msg=auth_required');
-    exit;
-}
-
-
-// =====================================================
-// ADMIN / EXISTING SELLER CHECK
-// =====================================================
-
-if ($current_user['role'] === 'admin') {
-    header('Location: admin/index.php');
-    exit;
-}
-
-if ($current_user['role'] === 'seller') {
-    header('Location: seller/index.php');
     exit;
 }
 

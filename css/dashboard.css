@@ -432,3 +432,13 @@ body.dashboard-body {
     padding: 1rem;
   }
 }
+
+
+#notificationMenu {
+    z-index: 99999 !important;
+}
+
+#notificationMenu.show {
+    display: block !important;
+}
+
